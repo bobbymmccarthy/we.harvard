@@ -1,0 +1,13 @@
+.fc-day-today {
+  background-color: inherit !important;
+}
+/* .calendar {
+  height: 400px;
+  width: 600px;
+  background-color: red;
+} */
+
+.calendar-container .fc {
+  height: 60vh;
+  width: 50vw;
+}
