@@ -6,9 +6,10 @@ import interactionPlugin from '@fullcalendar/interaction'
 import { createEventId } from './event-utils'
 import TextField from '@mui/material/TextField';
 import Courses from './courses.json'
-import ClassCatalog from "./components/ClassCatalog";
 import VirtualizedList from "./components/VirtualizedList";
-import FormDialog from './FormDialog';
+import { useSelector} from 'react-redux'
+import BasicSelect from "./components/BasicSelect";
+import ClassCard from "./components/Class";
 // import ScrollableCardList from "./components/ScrollableCardList";
 
 
@@ -80,6 +81,13 @@ function App() {
   const [eventTimes, setEventTimes] = useState([]);
   const [displayCourses, setDisplayCourses] = useState(Courses);
   const [displayCatalog, setDisplayCatalog] = useState(null);
+  const label = useSelector((state) => state.label.value)
+  const activeLabel = useSelector((state) => state.label.activeLabel)
+  const activeClass = useSelector((state) => state.label.activeClass)
+  useEffect(() => {
+    console.log(label)
+  },[label])
+
 
   const [searchText, setSearchText] = useState('');
 
@@ -110,21 +118,29 @@ function App() {
   }
 
   useEffect(() => {
-    setDisplayCourses(Courses.filter((course) => {
-      // console.log(availableTime(course), course.title)
-      return availableTime(course)
+    setDisplayCourses(Courses.map((course) => {
+      return {
+        ...course,
+        gray: !availableTime(course)
+      };
     }))
   }, [eventTimes])
   const catalog = null;
-  // useEffect(() => {
-  //   events.forEach((event) => {
-  //     console.log(event)
-  //     console.log(`Event "${event.title}" starts at ${weekdays[event.start.getDay()]}, ${event.start.getHours() + event.start.getMinutes()/ 60.0} and ends at ${weekdays[event.end.getDay()]}, ${event.end.getHours() + event.end.getMinutes()/ 60.0}`);
-  //   });
-  // }, [events]);
+
+
+
   useEffect(() => {
-    setDisplayCatalog(<VirtualizedList courses={displayCourses}/>)
-  }, [displayCourses])
+    if (activeLabel){
+      setDisplayCatalog(<VirtualizedList courses={label[activeLabel]}/>)
+    }
+    else{
+      setDisplayCatalog(<VirtualizedList courses={displayCourses}/>)
+    }
+    
+  }, [displayCourses, activeLabel])
+
+
+
   // console.log(eventTimes)
   useEffect(() => {
     const calendarApi = calendarRef.current.getApi();
@@ -181,17 +197,22 @@ function App() {
         />
         
       </div>
+
       <div>
         {/* <VirtualizedList classInfo={displayCatalog}/> */}
-        <TextField 
-          id="outlined-basic"
-          label="Search" 
-          variant="outlined" 
-          style = {{marginTop : "25px"}} 
-          value={searchText}
-          onChange={handleSearchTextChange}/>
+        <div style = {{display: 'flex'}}>
+          <TextField 
+            id="outlined-basic"
+            label="Search" 
+            variant="outlined" 
+            style = {{marginTop : "25px"}} 
+            value={searchText}
+            onChange={handleSearchTextChange}/>
+          <BasicSelect   />
+        </div>
         {/* <h3>{searchText}</h3> */}
         {displayCatalog}
+        {activeClass && <ClassCard course = {activeClass} />}
       </div>
       
     </div>

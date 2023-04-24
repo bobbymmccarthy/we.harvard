@@ -1,35 +1,57 @@
-import React from 'react'
+import * as React from 'react';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import { useSelector} from 'react-redux'
 
-const findAvail = (meetingPatterns) => {
-    const days = []
-    if(meetingPatterns.meetsOnMonday){
-        days.push('M');
-    }
-    if(meetingPatterns.meetsOnTuesday){
-        days.push('T');
-    }
-    if(meetingPatterns.meetsOnWednesday){
-        days.push('W');
-    }
-    if(meetingPatterns.meetsOnThursday){
-        days.push('Th');
-    }
-    if(meetingPatterns.meetsOnFriday){
-        days.push('F');
-    }
-    return days.join(',')
+const bull = (
+  <Box
+    component="span"
+    sx={{ display: 'inline-block', mx: '2px', transform: 'scale(0.8)' }}
+  >
+    •
+  </Box>
+);
+
+
+
+function removeTags(str) {
+    if ((str===null) || (str===''))
+        return false;
+    else
+        str = str.toString();
+          
+    // Regular expression to identify HTML tags in
+    // the input string. Replacing the identified
+    // HTML tag with a null string.
+    return str.replace( /(<([^>]+)>)/ig, '');
 }
 
-const Class = ({classInfo}) => {
-
-    return (
-        <div>
-            <p> {classInfo.title} </p>
-            <p> {classInfo.meetingPatterns.length != 0 ? findAvail(classInfo.meetingPatterns[0]) : 'TBA'} </p>
-
-            {classInfo.meetingPatterns.length != 0 && <p> {classInfo.meetingPatterns[0].startTime} - {classInfo.meetingPatterns[0].endTime}</p>}
-        </div>
-    )
+export default function ClassCard() {
+   
+  const activeClass = useSelector((state) => state.label.activeClass)
+//   console.log(activeClass)
+  return (
+    <Box sx={{ minWidth: 275 }}>
+      <Card variant="outlined">
+      <CardContent>
+      <Typography variant="h5" component="div">
+        {activeClass.subject} {activeClass.catalogNumber}: {activeClass.title}
+      </Typography>
+      <Typography sx={{ mb: 1.5 }} color="text.secondary">
+        Description
+      </Typography>
+      <Typography variant="body2">
+        {removeTags(activeClass.description)}
+      </Typography>
+    </CardContent>
+    {/* <CardActions>
+      <Button size="small">Learn More</Button>
+    </CardActions> */}
+      </Card>
+    </Box>
+  );
 }
-
-export default Class

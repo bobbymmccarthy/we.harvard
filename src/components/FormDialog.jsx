@@ -6,10 +6,16 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import LabelOutlinedIcon from '@mui/icons-material/Label';
+import { IconButton, ListItemIcon } from '@mui/material';
+import {  useDispatch } from 'react-redux'
+import { addLabel } from '../redux/labels'
 
-export default function FormDialog() {
+export default function FormDialog(props) {
   const [open, setOpen] = React.useState(false);
-
+  const [searchText, setSearchText] = React.useState("")
+  const dispatch = useDispatch()
+  
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -18,31 +24,37 @@ export default function FormDialog() {
     setOpen(false);
   };
 
+  const handleCreate = () => {
+    dispatch(addLabel({course: props.course, label: searchText}))
+    setOpen(false)
+  }
+  
+
   return (
     <div>
-      <Button variant="outlined" onClick={handleClickOpen}>
-        Open form dialog
-      </Button>
+      <IconButton onClick={handleClickOpen}> 
+            <LabelOutlinedIcon/>
+        </IconButton>
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Subscribe</DialogTitle>
+        <DialogTitle>Add Labels</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            To subscribe to this website, please enter your email address here. We
-            will send updates occasionally.
+            Create or Select a Label for this Class
           </DialogContentText>
           <TextField
             autoFocus
             margin="dense"
             id="name"
-            label="Email Address"
-            type="email"
+            label="Label"
             fullWidth
             variant="standard"
+            value={searchText}
+            onChange = {(event) => setSearchText(event.target.value)}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose}>Subscribe</Button>
+          <Button onClick={handleCreate}>Create</Button>
         </DialogActions>
       </Dialog>
     </div>
