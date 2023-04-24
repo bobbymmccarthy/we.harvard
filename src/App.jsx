@@ -118,24 +118,31 @@ function App() {
   }
 
   useEffect(() => {
-    setDisplayCourses(Courses.map((course) => {
+    console.log('courses changed')
+    console.log()
+    setDisplayCourses(displayCourses.map((course) => {
       return {
         ...course,
         gray: !availableTime(course)
       };
     }))
   }, [eventTimes])
+
   const catalog = null;
 
+  useEffect(() => {
+    console.log(activeLabel)
+    if (activeLabel){
+      setDisplayCourses(label[activeLabel])
+    }
+    else {
+      setDisplayCourses(Courses)
+    }
+  }, [activeLabel])
 
 
   useEffect(() => {
-    if (activeLabel){
-      setDisplayCatalog(<VirtualizedList courses={label[activeLabel]}/>)
-    }
-    else{
-      setDisplayCatalog(<VirtualizedList courses={displayCourses}/>)
-    }
+    setDisplayCatalog(<VirtualizedList courses={displayCourses}/>)
     
   }, [displayCourses, activeLabel])
 
