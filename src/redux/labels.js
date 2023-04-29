@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { useDispatch } from 'react-redux';
 
 export const labelsSlice = createSlice({
   name: 'labels',
@@ -8,7 +9,9 @@ export const labelsSlice = createSlice({
     activeLabel: null,
     activeClass: null,
     addedClassInfo: null,
-    addedClasses: []
+    addedClasses: [],
+    eventTimes: [],
+    removedClass: null
   },
   reducers: {
     addLabel: (state, action) => {
@@ -26,6 +29,11 @@ export const labelsSlice = createSlice({
         state.keys[course.id].push(label)
       }
     },
+    removeLabel: (state, action) => {
+      const {id, label} = action.payload;
+      state.keys[id].filter((currLabel) => label != currLabel )
+      state.value[label].filter((currId) => id != currId)
+    },
     setActiveLabel: (state, action) => {
         if (action.payload == 'all'){
             state.activeLabel = null
@@ -40,7 +48,7 @@ export const labelsSlice = createSlice({
         
     },
     addClassToCalendar: (state,action) => {
-      console.log(action.payload)
+      // console.log({class: action.payload})
       // state.addedClassInfo = action.payload
       if(!(state.addedClasses.includes(action.payload.id)) && state.addedClasses.length < 10)
       {
@@ -51,12 +59,25 @@ export const labelsSlice = createSlice({
     },
     nullAddedClass: (state) => {
       state.addedClassInfo = null;
+    },
+    addEventTimes: (state, action) => {
+      state.eventTimes = action.payload
+    },
+    removeClass: (state, action) => {
+      state.addedClasses = state.addedClasses.filter((id) => id != action.payload)
+      state.removedClass = action.payload
+      state.keys[action.payload] = state.keys[action.payload].filter((currLabel) => 'added' != currLabel )
+      state.value['added'] = state.value['added'].filter((course) => action.payload != course.id)
+      // console.log(state.value['added'])
+    },
+    nullRemovedClass: (state) => {
+      state.removedClass = null;
     }
   }
   
 })
 
 // Action creators are generated for each case reducer function
-export const { addLabel, setActiveLabel, setActiveClass, addClassToCalendar, nullAddedClass } = labelsSlice.actions
+export const { addLabel, setActiveLabel, setActiveClass, addClassToCalendar, nullAddedClass, addEventTimes, removeClass, nullRemovedClass } = labelsSlice.actions
 
 export default labelsSlice.reducer

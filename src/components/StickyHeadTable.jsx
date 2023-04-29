@@ -6,14 +6,13 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import TableRow from '@mui/material/TableRow';
-import { Button } from '@mui/material';
 import FormDialog from './FormDialog';
 import { useSelector} from 'react-redux'
-import {  useDispatch } from 'react-redux'
-import { setActiveClass, addClassToCalendar } from '../redux/labels'
+import { useDispatch } from 'react-redux'
+import { setActiveClass, addClassToCalendar, removeClass } from '../redux/labels'
 import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import IconButton from '@mui/material/IconButton';
 
 const columns = [
@@ -24,12 +23,14 @@ const columns = [
 ];
 
 
-export default function StickyHeadTable({courses}) {
+export default function StickyHeadTable({courses, gray}) {
+  console.log({gray})
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const dispatch = useDispatch()
   
   const keys = useSelector((state) => state.label.keys)
+  console.log(keys)
   
 //   console.log(processedClasses)
   const handleChangePage = (event, newPage) => {
@@ -96,16 +97,17 @@ export default function StickyHeadTable({courses}) {
   
 
   const createData = (course) => {
+    // console.log({gray})
     return { courseNum: <div style = {{display: "flex", alignItems: "center"}}> 
-                            <IconButton onClick = {() => addClass(course)} variant="outlined" size = "small" color="primary"> 
-                            <AddIcon /> 
+                            <IconButton onClick = {() => keys[course.id] && keys[course.id].includes('added') ? dispatch(removeClass(course.id)): addClass(course) } variant="outlined" size = "small" color="primary"> 
+                            {keys[course.id] && keys[course.id].includes('added') ? <RemoveIcon /> :<AddIcon />}
                             </IconButton> 
                             <FormDialog course = {course} />
                             {`${course.subject} ${course.catalogNumber}`} 
                         </div>, 
             title: course.title, 
             labels: keys[course.id] ? keys[course.id].join(','): "", 
-            gray: "gray" in course ? course.gray : false,
+            id: course.id,
             course: course};
   }
   const handleClick = (course) => {
@@ -138,9 +140,10 @@ export default function StickyHeadTable({courses}) {
                   <TableRow hover onClick = {() => handleClick(row.course)} role="checkbox" tabIndex={-1} key={row.code}>
                     {columns.map((column) => {
                       const value = row[column.id];
-                    //   console.log(row)
+                      // console.log(gray[0])
+                      // console.log({id: row.id, inGray: gray[0]==row.id})
                       return (
-                        <TableCell style = {{color: row.gray ? 'gray': 'black'}} key={column.id} align={column.align}>
+                        <TableCell style = {{color: gray.includes(row.id) ? 'gray': 'black'}} key={column.id} align={column.align}>
                           {value}
                         </TableCell>
                       );

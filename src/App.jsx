@@ -14,6 +14,7 @@ import ClassCard from "./components/Class";
 import StickyHeadTable from "./components/StickyHeadTable";
 import {Grid} from "@mui/material";
 import { addLabel } from "./redux/labels";
+import Calendar from "./components/Calendar";
 // import ScrollableCardList from "./components/ScrollableCardList";
 
 
@@ -23,21 +24,6 @@ const events = [
 ]
 const weekdays = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
 const labels = {}
-const handleDateSelect = (selectInfo) => {
-  let title = "busy"
-  let calendarApi = selectInfo.view.calendar
-  calendarApi.unselect() // clear date selection
-
-  if (title) {
-    calendarApi.addEvent({
-      id: createEventId(),
-      title,
-      start: selectInfo.startStr,
-      end: selectInfo.endStr,
-      allDay: selectInfo.allDay
-    })
-  }
-}
 
 
 
@@ -73,46 +59,30 @@ const findAvail = (meetingPatterns) => {
   return days
 }
 
-
 function App() {
   const calendarRef = useRef(null);
-  const [selectedEventId, setSelectedEventId] = useState(null);
   const [events, setEvents] = useState([]);
-  const [eventTimes, setEventTimes] = useState([]);
+  // const [eventTimes, setEventTimes] = useState([]);
   const [displayCourses, setDisplayCourses] = useState(Courses);
   const [displayCatalog, setDisplayCatalog] = useState(null);
   const label = useSelector((state) => state.label.value)
   const activeLabel = useSelector((state) => state.label.activeLabel)
   const activeClass = useSelector((state) => state.label.activeClass)
-  const addedClass = useSelector((state) => state.label.addedClassInfo)
-  const addedClasses = useSelector((state) => state.label.addedClasses)
-  const [classEvents, setClassEvents]  = useState([])
+  // const addedClass = useSelector((state) => state.label.addedClassInfo)
+  const eventTimes = useSelector((state) => state.label.eventTimes)
+  const [gray, setGray] = useState([])
   const dispatch = useDispatch()
 
 
   const [searchText, setSearchText] = useState('');
-  useEffect(() => {
-    console.log(label)
-  }, [label])
-  // console.log(label)
 
   const handleSearchTextChange = (event) => {
     setSearchText(event.target.value);
   }
 
-  const handleEventDelete = (clickInfo) => {
-    // if (window.confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'?`)) {
-    //   clickInfo.event.remove()
-    // }
-    if (!(classEvents.includes(clickInfo.event.id) )){
-      clickInfo.event.remove()
-    }
-    
-  }
 
 
   const availableTime = (course) => {
-    // console.log(course.meetingPatterns)
     if (!course.meetingPatterns || course.meetingPatterns.length == 0){
       return true
     }
@@ -128,48 +98,24 @@ function App() {
     return true
   }
 
-
   useEffect(() => {
-    console.log({addedClass})
-    console.log(label)
-    if(addedClass){
-      const events = []
-      const calendarApi = calendarRef.current.getApi();
-      for (let i = 0; i < addedClass.starts.length; i++) {
-        const eventId = createEventId();
-        console.log(addedClass.starts[i])
-        calendarApi.addEvent({
-          id: eventId,
-          title: addedClass.title,
-          start: addedClass.starts[i],
-          end: addedClass.ends[i],
-          allDay: false,
-          color: 'green'
-      })
-      
-      events.push(eventId)
-      
-    }
-    dispatch(addLabel({label: "added", course: addedClass.course}) )
-    setClassEvents([...classEvents, ...events])
-    dispatch(nullAddedClass())
-
-  }}, [addedClass])
-
-  useEffect(() => {
-
-    setDisplayCourses(displayCourses.map((course) => {
-      return {
-        ...course,
-        gray: !availableTime(course)
-      };
-    }))
+    console.log('setting gray')
+    // console.log('setting gray')
+    // console.log()
+    // console.log(displayCourses.filter((course) => !availableTime(course)).map((course) => course.id))
+    setGray(displayCourses.filter((course) => !availableTime(course)).map((course) => course.id))
+    // setDisplayCourses(displayCourses.map((course) => {
+    //   return {
+    //     ...course,
+    //     gray: !availableTime(course)
+    //   };
+    // }))
   }, [eventTimes])
 
 
   useEffect(() => {
 
-    console.log({activeLabel})
+    // console.log({activeLabel})
     if (activeLabel){
       setDisplayCourses(label[activeLabel])
     }
@@ -178,72 +124,19 @@ function App() {
     }
   }, [activeLabel])
 
-
+  // console.log({gray})
   useEffect(() => {
     // setDisplayCatalog(<VirtualizedList courses={displayCourses}/>)
-    setDisplayCatalog(<StickyHeadTable style = {{maxHeight: '100%'}} courses = {displayCourses} />)
+    setDisplayCatalog(<StickyHeadTable style = {{maxHeight: '100%'}} courses = {displayCourses} gray = {gray} />)
     
-  }, [displayCourses, activeLabel])
+  }, [displayCourses, activeLabel, gray])
 
 
-
-  // console.log(eventTimes)
-  useEffect(() => {
-    const calendarApi = calendarRef.current.getApi();
-
-    function handleEventChange() {
-      const clientEvents = calendarApi.getEvents();
-      const currEventTimes = clientEvents.map((event) => {
-         return {start: {day: event.start.getDay(), 
-                  hour : event.start.getHours() + event.start.getMinutes()/ 60.0}, 
-                  end: {day: event.end.getDay(), 
-                  hour: event.end.getHours() + event.end.getMinutes()/ 60.0}}
-      });
-      setEventTimes(currEventTimes)
-      setEvents(clientEvents);
-    }
-
-    calendarApi.on('eventAdd', handleEventChange);
-    calendarApi.on('eventChange', handleEventChange);
-    calendarApi.on('eventRemove', handleEventChange);
-
-    return () => {
-      calendarApi.off('eventAdd', handleEventChange);
-      calendarApi.off('eventChange', handleEventChange);
-      calendarApi.off('eventRemove', handleEventChange);
-    };
-  }, []);
   
   return (
     <Grid container spacing = {3}>
       <Grid item xs = {6} >
-          <FullCalendar
-            className = {"calendar"}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView='timeGridWeek'
-            headerToolbar={{
-              left: "",
-              center: "",
-              right: ""
-            }}
-            allDaySlot ={false}
-            editable={true}
-            selectable = {true}
-            selectMirror={true}
-            select={handleDateSelect}
-            weekends={false}
-            events={events}
-            ref={calendarRef}
-            slotMinTime='08:00:00'
-            slotMaxTime='20:00:00'
-            eventClick={handleEventDelete}
-            eventContent={renderEventContent}
-            dayHeaderContent={({ date }, b, c) => {
-              return (
-                <h3>{weekdays[date.getDay()]}</h3>
-              );
-            }}
-          />  
+          <Calendar />
       </Grid>
       <Grid item xs = {6}>
         <div>
