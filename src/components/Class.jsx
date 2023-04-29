@@ -16,7 +16,39 @@ const bull = (
   </Box>
 );
 
+const weekdays = ["S","M","Tu","W","Th","F","S"]
 
+const findAvail = (meetingPatterns) => {
+    const days = []
+    // console.log({meetingPatterns})
+    if(meetingPatterns[0].meetsOnMonday){
+        days.push(1);
+    }
+    if(meetingPatterns[0].meetsOnTuesday){
+        days.push(2);
+    }
+    if(meetingPatterns[0].meetsOnWednesday){
+        days.push(3);
+    }
+    if(meetingPatterns[0].meetsOnThursday){
+        days.push(4);
+    }
+    if(meetingPatterns[0].meetsOnFriday){
+        days.push(5);
+    }
+    return days
+  }
+
+  function convertTime(militaryTime) {
+    var time = militaryTime.split(':');
+    var hours = parseInt(time[0]);
+    var minutes = time[1];
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    var standardTime = hours + ':' + minutes + ' ' + ampm;
+    return standardTime;
+  }
 
 function removeTags(str) {
     if ((str===null) || (str===''))
@@ -42,7 +74,7 @@ export default function ClassCard() {
         {activeClass.subject} {activeClass.catalogNumber}: {activeClass.title}
       </Typography>
       <Typography sx={{ mb: 1.5 }} color="text.secondary">
-        Description
+        {activeClass.meetingPatterns && activeClass.meetingPatterns[0] ? `${findAvail(activeClass.meetingPatterns).map((day) => weekdays[day]).join("")} ${convertTime(activeClass.meetingPatterns[0].startTime)}-${convertTime(activeClass.meetingPatterns[0].endTime)}` : "TBA"}
       </Typography>
       <Typography variant="body2">
         {removeTags(activeClass.description)}
