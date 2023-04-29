@@ -213,6 +213,34 @@ function App() {
       calendarApi.off('eventRemove', handleEventChange);
     };
   }, []);
+
+  useEffect(() => {
+    async function fetchData () {
+      const query = searchText;
+      const response = await fetch(`http://localhost:5001/search?query=${query}`);
+      console.log(response);
+      if (!response.ok) {
+        const message = `An error has occurred: ${response.statusText}`;
+        window.alert(message);
+        return;
+      }
+  
+      const record = await response.json();
+      console.log(record);
+      if (!record) {
+        window.alert(`Class from query ${id} not found`);
+        navigate("/");
+        return;
+      }
+
+    }
+    
+    if (searchText != "") {
+      fetchData();
+    }
+  
+    return;
+  }, [searchText]);
   
   return (
     <Grid container spacing = {3}>
