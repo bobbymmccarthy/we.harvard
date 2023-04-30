@@ -46,7 +46,6 @@ const ObjectId = require("mongodb").ObjectId;
 recordRoutes.route("/search").get(async function (req, res) {
     const gened = req.query.gened;
     const subject = req.query.gened;
-    console.log(gened);
     const agg = [
       {
         $search: {
@@ -55,7 +54,10 @@ recordRoutes.route("/search").get(async function (req, res) {
             query: req.query.query,
             path: {
               wildcard: "*"
-            }
+            },
+            // fuzzy: {
+            //     maxEdits: 0
+            // }
           }
         }
       },
@@ -73,9 +75,6 @@ recordRoutes.route("/search").get(async function (req, res) {
           }
         }
       ] : []),
-      {
-        $limit: 5
-      }
     ];
     const coll = dbo.getDb("course_catalog").collection("myHarvardExtended");
     let cursor = coll.aggregate(agg);
@@ -103,15 +102,32 @@ recordRoutes.route("/search").get(async function (req, res) {
     }
   });
 
-
-  recordRoutes.route("/gened_filter").get(async function (req, res) {
+  // Endpoint for retreiving all courses by subject
+  recordRoutes.route("/gened").get(async function (req, res) {
     const gened_type = req.query.type;
-    const coll = dbo.getDb("course_catalog").collection("myHarvard");
-    const query = { externalId: class_id };
-
+    const coll = dbo.getDb("course_catalog").collection("myHarvardExtended");
+    const query = { GenedType: { $in: [gened_type] } };
+  
     try {
-        const result = await coll.findOne(query);
-        res.json(result)
+      const cursor = coll.find(query);
+      const results = await cursor.toArray();
+      res.json(results);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('An error occurred while processing the search request');
+    }
+  });
+
+  // Endpoint for retreiving all courses by subject
+  recordRoutes.route("/subject").get(async function (req, res) {
+    const sub = req.query.type;
+    const coll = dbo.getDb("course_catalog").collection("myHarvardExtended");
+    const query = { subject: sub };
+  
+    try {
+      const cursor = coll.find(query);
+      const results = await cursor.toArray();
+      res.json(results);
     } catch (err) {
       console.error(err);
       res.status(500).send('An error occurred while processing the search request');
