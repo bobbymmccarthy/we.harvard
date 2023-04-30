@@ -4,13 +4,13 @@ import { useDispatch } from 'react-redux';
 export const labelsSlice = createSlice({
   name: 'labels',
   initialState: {
-    value: {},
-    keys: {},
+    value: JSON.parse(localStorage.getItem("value")) ? JSON.parse(localStorage.getItem("value")) : {},
+    keys: JSON.parse(localStorage.getItem("keys")) ? JSON.parse(localStorage.getItem("keys")) : {},
     activeLabel: null,
     activeClass: null,
     addedClassInfo: null,
     addedClasses: [],
-    eventTimes: [],
+    eventTimes: JSON.parse(localStorage.getItem("eventTimes")) ? JSON.parse(localStorage.getItem("eventTimes")) : [],
     removedClass: null
   },
   reducers: {
@@ -31,8 +31,11 @@ export const labelsSlice = createSlice({
     },
     removeLabel: (state, action) => {
       const {id, label} = action.payload;
-      state.keys[id].filter((currLabel) => label != currLabel )
-      state.value[label].filter((currId) => id != currId)
+      state.keys[id] = state.keys[id].filter((currLabel) => label != currLabel )
+      
+      state.value[label] = filteredClasses
+      // console.log(filteredClasses)
+      
     },
     setActiveLabel: (state, action) => {
         if (action.payload == 'all'){
@@ -54,7 +57,9 @@ export const labelsSlice = createSlice({
       {
         state.addedClassInfo = action.payload
         state.addedClasses.push(action.payload.id)
+        localStorage.setItem("addedClasses", JSON.stringify(state.addedClasses))
       }
+      
       
     },
     nullAddedClass: (state) => {
@@ -62,12 +67,16 @@ export const labelsSlice = createSlice({
     },
     addEventTimes: (state, action) => {
       state.eventTimes = action.payload
+      localStorage.setItem('eventTimes', JSON.stringify(state.eventTimes))
     },
     removeClass: (state, action) => {
       state.addedClasses = state.addedClasses.filter((id) => id != action.payload)
       state.removedClass = action.payload
       state.keys[action.payload] = state.keys[action.payload].filter((currLabel) => 'added' != currLabel )
       state.value['added'] = state.value['added'].filter((course) => action.payload != course.id)
+      if (state.value['added'].length == 0){
+        delete state.value["added"]
+      }
       // console.log(state.value['added'])
     },
     nullRemovedClass: (state) => {

@@ -24,15 +24,13 @@ const columns = [
 
 
 export default function StickyHeadTable({courses, gray}) {
-  console.log({gray})
+  // console.log({gray})
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const dispatch = useDispatch()
   
   const keys = useSelector((state) => state.label.keys)
-  console.log(keys)
-  
-//   console.log(processedClasses)
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -94,12 +92,16 @@ export default function StickyHeadTable({courses, gray}) {
     // addClasstoCalendar
   }
 
-  
+  const handleRemoveClass = (id) => {
+    const prevEvents = JSON.parse(localStorage.getItem("events"))
+    localStorage.setItem("events", JSON.stringify(prevEvents.filter((event) => event.groupId != id)))
+    dispatch(removeClass(id))
+  }
 
   const createData = (course) => {
     // console.log({gray})
     return { courseNum: <div style = {{display: "flex", alignItems: "center"}}> 
-                            <IconButton onClick = {() => keys[course.id] && keys[course.id].includes('added') ? dispatch(removeClass(course.id)): addClass(course) } variant="outlined" size = "small" color="primary"> 
+                            <IconButton onClick = {() => keys[course.id] && keys[course.id].includes('added') ? handleRemoveClass(course.id) : addClass(course) } variant="outlined" size = "small" color="primary"> 
                             {keys[course.id] && keys[course.id].includes('added') ? <RemoveIcon /> :<AddIcon />}
                             </IconButton> 
                             <FormDialog course = {course} />

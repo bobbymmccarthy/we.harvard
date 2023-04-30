@@ -14,7 +14,7 @@ import { addLabel, addEventTimes, nullAddedClass, nullRemovedClass, removeClass 
 const events = [
     {id: createEventId(), title: 'Meeting', start: new Date() }
   ]
-const weekdays = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+const weekdays = ["Sunday","Mon","Tue","Wed","Thu","Fri","Saturday"]
 const labels = {}
 
 const findAvail = (meetingPatterns) => {
@@ -41,17 +41,23 @@ const findAvail = (meetingPatterns) => {
 const handleDateSelect = (selectInfo) => {
     let title = "busy"
     let calendarApi = selectInfo.view.calendar
+    console.log(calendarApi.getEvents())
     calendarApi.unselect() // clear date selection
-  
-    if (title) {
-      calendarApi.addEvent({
+    const event = {
         id: createEventId(),
         groupId: 'notCourse',
         title,
         start: selectInfo.startStr,
         end: selectInfo.endStr,
         allDay: selectInfo.allDay
-      })
+      }
+    let prevEvents = JSON.parse(localStorage.getItem("events"))
+    prevEvents = prevEvents ? prevEvents : []
+    prevEvents.push(event)
+    // console
+    localStorage.setItem("events", JSON.stringify(prevEvents))
+    if (title) {
+      calendarApi.addEvent(event)
     }
   }
 
@@ -89,22 +95,47 @@ const Calendar = () => {
     const [displayCourses, setDisplayCourses] = useState(Courses);
     const [displayCatalog, setDisplayCatalog] = useState(null);
     const label = useSelector((state) => state.label.value)
+    const keys = useSelector((state) => state.label.keys)
     const activeLabel = useSelector((state) => state.label.activeLabel)
     const activeClass = useSelector((state) => state.label.activeClass)
     const addedClass = useSelector((state) => state.label.addedClassInfo)
     const addedClasses = useSelector((state) => state.label.addedClasses)
     const removedClass = useSelector((state) => state.label.removedClass)
     const [classEvents, setClassEvents]  = useState([])
-    
     const dispatch = useDispatch()
+
+    useEffect(() => {
+        localStorage.setItem("value", JSON.stringify(label))
+        localStorage.setItem("keys", JSON.stringify(keys))
+      }, [label])
+
+    useEffect(() => {
+        // localStorage.clear()
+        const calendarApi = calendarRef.current.getApi();
+        // console.log(localStorage.getItem("events"))
+        const events = JSON.parse(localStorage.getItem("events"))
+        // console.log(JSON.stringify(events))
+        if (events && calendarApi.getEvents().length == 0){
+            for(let i = 0; i < events.length; i ++){
+                console.log(events[i])
+                calendarApi.addEvent(events[i])
+            }
+        }
+        
+
+        
+    }, [])
+
 
     useEffect(() => {
         if(removedClass)
         {
             const calendarApi = calendarRef.current.getApi();
             const events = calendarApi.getEvents()
+
             for (let i = 0; i < events.length; i++){
                 if (events[i]._def.groupId == removedClass){
+                    
                     events[i].remove()
                 }
             }
@@ -118,11 +149,14 @@ const Calendar = () => {
         //   clickInfo.event.remove()
         // }
         if (clickInfo.event._def.groupId == "notCourse"){
-          clickInfo.event.remove()
+          const events = JSON.parse(localStorage.getItem("events"))
+          localStorage.setItem("events", JSON.stringify(events.filter((event) => event.id != clickInfo.event.publicId)))
+          clickInfo.event.remove()    
         }
         else{
-            dispatch(removeClass(clickInfo.event.groupId))
-            
+            const prevEvents = JSON.parse(localStorage.getItem("events"))
+            localStorage.setItem("events", JSON.stringify(prevEvents.filter((event) => event.groupId != clickInfo.event.groupId)))
+            dispatch(removeClass(clickInfo.event.groupId))   
         }
         
       }
@@ -130,11 +164,12 @@ const Calendar = () => {
 
         if(addedClass){
             const events = []
+            const fullEvents = []
             const calendarApi = calendarRef.current.getApi();
             for (let i = 0; i < addedClass.starts.length; i++) {
             const eventId = createEventId();
             // console.log(addedClass.starts[i])
-            calendarApi.addEvent({
+            const event = {
                 id: eventId,
                 title: addedClass.title,
                 groupId: addedClass.id,
@@ -142,11 +177,14 @@ const Calendar = () => {
                 end: addedClass.ends[i],
                 allDay: false,
                 color: 'green'
-            })
-            
+            }
+            calendarApi.addEvent(event)
+            fullEvents.push(event)
             events.push(eventId)
             
         }
+        const prevEvents = JSON.parse(localStorage.getItem("events"));
+        localStorage.setItem("events", JSON.stringify(prevEvents ? [ ...prevEvents,...fullEvents] : fullEvents))
         dispatch(addLabel({label: "added", course: addedClass.course}) )
         setClassEvents([...classEvents, ...events])
         dispatch(nullAddedClass())
@@ -154,22 +192,6 @@ const Calendar = () => {
     }}, [addedClass])
 
 
-    // useEffect(() => {
-    //     for (let i = 0; i < displayCourses.length; i++){
-    //         if (!availableTime(course, eventTimes)){
-    //             gray.add(displayCourses)
-    //         }
-    //         else {
-    //             gray.remove(displayCourses)
-    //         }
-    //     }
-    //     setDisplayCourses(displayCourses.map((course) => {
-    //         return {
-    //         ...course,
-    //         gray: !availableTime(course, eventTimes)
-    //         };
-    //     }))
-    // }, [eventTimes])
 
     useEffect(() => {
         if (activeLabel){
@@ -180,11 +202,6 @@ const Calendar = () => {
         }
     }, [activeLabel])
 
-    // useEffect(() => {
-    // // setDisplayCatalog(<VirtualizedList courses={displayCourses}/>)
-    // setDisplayCatalog(<StickyHeadTable style = {{maxHeight: '100%'}} courses = {displayCourses} />)
-    
-    // }, [displayCourses, activeLabel])
 
     useEffect(() => {
     const calendarApi = calendarRef.current.getApi();
@@ -216,7 +233,7 @@ const Calendar = () => {
   return (
     <>
         <FullCalendar
-            className = {"calendar"}
+            height = {'auto'}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView='timeGridWeek'
             headerToolbar={{
@@ -238,7 +255,10 @@ const Calendar = () => {
             eventContent={renderEventContent}
             dayHeaderContent={({ date }, b, c) => {
               return (
-                <h3>{weekdays[date.getDay()]}</h3>
+                <div style = {{margin: '-10px'}}>
+                    <h3>{weekdays[date.getDay()]}</h3>
+                </div>
+                
               );
             }}
           />  
