@@ -12,29 +12,91 @@ const dbo = require("../db/conn");
 const ObjectId = require("mongodb").ObjectId;
  
  
+// recordRoutes.route("/search").get(async function (req, res) {
+//     // const gened = req.query.gened;
+//     // const subjects = req.query.subjects;
+//     const agg = [
+//       {
+//         $search: {
+//           index: "myHarvard_index",
+//           text: {
+//             query: req.query.query, // note the change to use req.query.query instead of req.params.query
+//             path: {
+//               wildcard: "*"
+//             }
+//           }
+//         },
+//       },
+//       {
+//         $limit: 5,
+//       },
+//     ];
+//     const coll = dbo.getDb("course_catalog").collection("myHarvard");
+//     let cursor = coll.aggregate(agg);
+  
+//     try {
+//       const results = await cursor.toArray(); // convert the cursor to an array of results
+//       res.json(results); // return the results as the response
+//     } catch (err) {
+//       console.error(err);
+//       res.status(500).send('An error occurred while processing the search request');
+//     }
+//   });
+
 recordRoutes.route("/search").get(async function (req, res) {
+    const gened = req.query.gened;
+    const subject = req.query.gened;
+    console.log(gened);
     const agg = [
       {
         $search: {
-          index: "myHarvard_index",
+          index: "extendedSearch",
           text: {
-            query: req.query.query, // note the change to use req.query.query instead of req.params.query
+            query: req.query.query,
             path: {
               wildcard: "*"
             }
           }
-        },
+        }
       },
+      ...(gened ? [
+        {
+          $match: {
+            GenedType: { $in: [gened] }
+          }
+        }
+      ] : []),
+      ...(subject ? [
+        {
+          $match: {
+            Subject: subject
+          }
+        }
+      ] : []),
       {
-        $limit: 5,
-      },
+        $limit: 5
+      }
     ];
-    const coll = dbo.getDb("course_catalog").collection("myHarvard");
+    const coll = dbo.getDb("course_catalog").collection("myHarvardExtended");
     let cursor = coll.aggregate(agg);
-  
+    
     try {
-      const results = await cursor.toArray(); // convert the cursor to an array of results
-      res.json(results); // return the results as the response
+      const results = await cursor.toArray();
+      res.json(results);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('An error occurred while processing the search request');
+    }
+  });
+
+  recordRoutes.route("/private_search").get(async function (req, res) {
+    const class_id = parseInt(req.query.id);
+    const coll = dbo.getDb("course_catalog").collection("myHarvard");
+    const query = { externalId: class_id };
+
+    try {
+        const result = await coll.findOne(query);
+        res.json(result)
     } catch (err) {
       console.error(err);
       res.status(500).send('An error occurred while processing the search request');
@@ -42,8 +104,8 @@ recordRoutes.route("/search").get(async function (req, res) {
   });
 
 
-  recordRoutes.route("/private_search").get(async function (req, res) {
-    const class_id = parseInt(req.query.id);
+  recordRoutes.route("/gened_filter").get(async function (req, res) {
+    const gened_type = req.query.type;
     const coll = dbo.getDb("course_catalog").collection("myHarvard");
     const query = { externalId: class_id };
 
