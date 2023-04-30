@@ -62,6 +62,14 @@ function removeTags(str) {
     return str.replace( /(<([^>]+)>)/ig, '');
 }
 
+function generateSyllabusURL(id) {
+  return `https://syllabus.harvard.edu/?course_id=${id}`;
+}
+
+function generateQURL(id) {
+  return `https://course-evaluation-reports.fas.harvard.edu/fas/course_summary.html?course_id=${id}`;
+}
+
 export default function ClassCard() {
    
   const activeClass = useSelector((state) => state.label.activeClass)
@@ -75,6 +83,15 @@ export default function ClassCard() {
       </Typography>
       <Typography sx={{ mb: 1.5 }} color="text.secondary">
         {activeClass.meetingPatterns && activeClass.meetingPatterns[0] ? `${findAvail(activeClass.meetingPatterns).map((day) => weekdays[day]).join("")} ${convertTime(activeClass.meetingPatterns[0].startTime)}-${convertTime(activeClass.meetingPatterns[0].endTime)}` : "TBA"}
+      </Typography>
+      <Typography sx={{ mb: 1.5 }} color="text.secondary">
+        <span>
+          <a href={generateSyllabusURL(activeClass.externalId)}>Syllabus</a>
+        </span>
+        &nbsp;
+        <span>
+          <a href={generateQURL(activeClass.externalId)}>Q Guide</a>
+        </span>
       </Typography>
       <Typography variant="body2">
         {removeTags(activeClass.description)}

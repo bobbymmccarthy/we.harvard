@@ -55,9 +55,9 @@ recordRoutes.route("/search").get(async function (req, res) {
             path: {
               wildcard: "*"
             },
-            fuzzy: {
-                maxEdits: 1
-            }
+            // fuzzy: {
+            //     maxEdits: 0
+            // }
           }
         }
       },
@@ -102,7 +102,7 @@ recordRoutes.route("/search").get(async function (req, res) {
     }
   });
 
-
+  // Endpoint for retreiving all courses by subject
   recordRoutes.route("/gened").get(async function (req, res) {
     const gened_type = req.query.type;
     const coll = dbo.getDb("course_catalog").collection("myHarvardExtended");
@@ -118,9 +118,9 @@ recordRoutes.route("/search").get(async function (req, res) {
     }
   });
 
+  // Endpoint for retreiving all courses by subject
   recordRoutes.route("/subject").get(async function (req, res) {
-    // const sub = req.query.type;
-    const sub = 'GERMAN'
+    const sub = req.query.type;
     const coll = dbo.getDb("course_catalog").collection("myHarvardExtended");
     const query = { subject: sub };
   
