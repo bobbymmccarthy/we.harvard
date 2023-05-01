@@ -11,7 +11,9 @@ export const labelsSlice = createSlice({
     addedClassInfo: null,
     addedClasses: [],
     eventTimes: JSON.parse(localStorage.getItem("eventTimes")) ? JSON.parse(localStorage.getItem("eventTimes")) : [],
-    removedClass: null
+    removedClass: null,
+    toggleVisible: {},
+    invisibleEvents: JSON.parse(localStorage.getItem("invisibleEvents")) ? JSON.parse(localStorage.getItem("invisibleEvents"))  : []
   },
   reducers: {
     addLabel: (state, action) => {
@@ -32,8 +34,10 @@ export const labelsSlice = createSlice({
     removeLabel: (state, action) => {
       const {id, label} = action.payload;
       state.keys[id] = state.keys[id].filter((currLabel) => label != currLabel )
-      
-      state.value[label] = filteredClasses
+      state.value[label] = state.value[label].filter((course) => course.id != id )
+      if (state.value[label].length == 0){
+        delete state.value[label]
+      }
       // console.log(filteredClasses)
       
     },
@@ -62,6 +66,26 @@ export const labelsSlice = createSlice({
       
       
     },
+    toggleVisibility: (state, action) => {
+      const id = action.payload
+      const events = JSON.parse(localStorage.getItem("events"))
+      if (events.some((event) => event.groupId == id))
+      {
+        state.toggleVisible = {visible: false, id}
+        localStorage.setItem("events", JSON.stringify(events.filter((event) => event.groupId != id)))
+        state.invisibleEvents = state.invisibleEvents ? [...state.invisibleEvents, ...events.filter((event) => event.groupId == id)] : events.filter((event) => event.groupId == id)
+      }
+      else
+      {
+        state.toggleVisible = {visible: true, id}
+      }
+    },
+    removeInvisibleEvents: (state,action) => {
+      const id = action.payload
+      const events = JSON.parse(localStorage.getItem("events"))
+      localStorage.setItem("events", JSON.stringify([...events,...state.invisibleEvents.filter((event) => event.groupId == id)])) 
+      state.invisibleEvents = state.invisibleEvents.filter((event) => event.groupId != id)
+    },
     nullAddedClass: (state) => {
       state.addedClassInfo = null;
     },
@@ -77,7 +101,6 @@ export const labelsSlice = createSlice({
       if (state.value['added'].length == 0){
         delete state.value["added"]
       }
-      // console.log(state.value['added'])
     },
     nullRemovedClass: (state) => {
       state.removedClass = null;
@@ -87,6 +110,16 @@ export const labelsSlice = createSlice({
 })
 
 // Action creators are generated for each case reducer function
-export const { addLabel, setActiveLabel, setActiveClass, addClassToCalendar, nullAddedClass, addEventTimes, removeClass, nullRemovedClass } = labelsSlice.actions
+export const {addLabel, 
+              setActiveLabel, 
+              setActiveClass, 
+              addClassToCalendar, 
+              toggleVisibility,
+              nullAddedClass, 
+              addEventTimes, 
+              removeClass, 
+              nullRemovedClass, 
+              removeLabel,
+              removeInvisibleEvents} = labelsSlice.actions
 
 export default labelsSlice.reducer

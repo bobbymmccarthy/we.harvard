@@ -73,7 +73,7 @@ function generateQURL(school, subject, classNum) {
 export default function ClassCard() {
    
   const activeClass = useSelector((state) => state.label.activeClass)
-  console.log({activeClass})
+  // console.log({activeClass})
 //   console.log(activeClass)
   return (
     <Box sx={{ minWidth: 275 }}>

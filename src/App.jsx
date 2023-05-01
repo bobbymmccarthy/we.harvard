@@ -15,7 +15,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { setActiveLabel } from './redux/labels'
-
+import { removeClass, addLabel, removeLabel, toggleVisibility } from "./redux/labels";
 
 import "./index.css"
 const events = [
@@ -64,6 +64,7 @@ function App() {
   const activeLabel = useSelector((state) => state.label.activeLabel)
   const activeClass = useSelector((state) => state.label.activeClass)
   const eventTimes = useSelector((state) => state.label.eventTimes)
+  const keys = useSelector((state) => state.label.keys)
   const [gray, setGray] = useState([])
   const [searchText, setSearchText] = useState([]);
   const dispatch = useDispatch()
@@ -88,15 +89,7 @@ function App() {
   }
 
   useEffect(() => {
-    console.log('setting gray')
-    // console.log(displayCourses.filter((course) => !availableTime(course)).map((course) => course.id))
     setGray(displayCourses.filter((course) => !availableTime(course)).map((course) => course.id))
-    // setDisplayCourses(displayCourses.map((course) => {
-    //   return {
-    //     ...course,
-    //     gray: !availableTime(course)
-    //   };
-    // }))
   }, [eventTimes])
 
 
@@ -109,11 +102,9 @@ function App() {
     }
   }, [activeLabel])
 
-  // console.log({gray})
+
   useEffect(() => {
-    // setDisplayCatalog(<VirtualizedList courses={displayCourses}/>)
-    setDisplayCatalog(<StickyHeadTable style = {{maxHeight: '100%'}} courses = {displayCourses} gray = {gray} />)
-    
+    setDisplayCatalog(<StickyHeadTable style = {{maxHeight: '100%'}} courses = {displayCourses} gray = {gray} />)   
   }, [displayCourses, activeLabel, gray, activeLabel])
 
 
@@ -141,9 +132,7 @@ function App() {
       setDisplayCourses(record)
 
     }
-    // console.log(searchText)
     if (searchText != "") {
-      // console.log('inside fetch')
       fetchData();
 
     }
@@ -154,16 +143,31 @@ function App() {
   const handleChange = (event) => {
     dispatch(setActiveLabel(event.target.value))
   };
+
+  const handleRemoveClass = (id) => {
+    const prevEvents = JSON.parse(localStorage.getItem("events"))
+    localStorage.setItem("events", JSON.stringify(prevEvents.filter((event) => event.groupId != id)))
+    dispatch(removeClass(id))
+  }
+
+  const handleVisibility = (course) => {
+    // console.log(course)
+    dispatch(toggleVisibility(course.id))
+  }
   
   return (
     <Grid container spacing = {3}>
       <Grid  item xs = {6} >
           <Calendar  />
-          <ButtonGroup variant = "contained" aria-label="contained button group">
-            <Button>GENED 1162</Button>
-            <Button><VisibilityIcon /></Button>
-            <Button><RemoveIcon /> </Button>
-          </ButtonGroup>
+          {label.added &&
+            label.added.map((course) => {
+              return <ButtonGroup variant = "contained" aria-label="contained button group">
+                      <Button>{course.subject} {course.catalogNumber} </Button>
+                      <Button onClick = {() => handleVisibility(course)}><VisibilityIcon /></Button>
+                      <Button onClick={() => handleRemoveClass(course.id)}><RemoveIcon /> </Button>
+                    </ButtonGroup>
+            })}
+          
       </Grid>
       <Grid item xs = {6}>
         <div>

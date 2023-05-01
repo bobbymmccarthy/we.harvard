@@ -142,8 +142,6 @@ export default function StickyHeadTable({courses, gray}) {
                   <TableRow hover onClick = {() => handleClick(row.course)} role="checkbox" tabIndex={-1} key={row.code}>
                     {columns.map((column) => {
                       const value = row[column.id];
-                      // console.log(gray[0])
-                      // console.log({id: row.id, inGray: gray[0]==row.id})
                       return (
                         <TableCell style = {{color: gray.includes(row.id) ? 'gray': 'black'}} key={column.id} align={column.align}>
                           {value}
