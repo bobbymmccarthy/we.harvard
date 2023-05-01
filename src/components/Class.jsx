@@ -66,13 +66,14 @@ function generateSyllabusURL(id) {
   return `https://syllabus.harvard.edu/?course_id=${id}`;
 }
 
-function generateQURL(id) {
-  return `https://course-evaluation-reports.fas.harvard.edu/fas/course_summary.html?course_id=${id}`;
+function generateQURL(school, subject, classNum) {
+  return `https://qreports.fas.harvard.edu/search/courses?school=${school}&search=${subject}+${classNum}`;
 }
 
 export default function ClassCard() {
    
   const activeClass = useSelector((state) => state.label.activeClass)
+  console.log({activeClass})
 //   console.log(activeClass)
   return (
     <Box sx={{ minWidth: 275 }}>
@@ -94,7 +95,7 @@ export default function ClassCard() {
         </span>
         &nbsp;
         <span>
-          <a href={generateQURL(activeClass.externalId)}>Q Guide</a>
+          <a href={generateQURL(activeClass.academicGroup,activeClass.subject, activeClass.catalogNumber)}>Q Guide</a>
         </span>
       </Typography>
       <Typography variant="body2">

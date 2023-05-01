@@ -2,12 +2,19 @@ import React, {useEffect, useState, useRef} from "react"
 import { createEventId } from './event-utils'
 import TextField from '@mui/material/TextField';
 import Courses from './courses.json';
-import { useSelector} from 'react-redux';
+import { useSelector, useDispatch} from 'react-redux';
 import BasicSelect from "./components/BasicSelect";
 import ClassCard from "./components/Class";
 import StickyHeadTable from "./components/StickyHeadTable";
 import {Grid} from "@mui/material";
 import Calendar from "./components/Calendar";
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import IconButton from "@mui/material/IconButton";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import RemoveIcon from '@mui/icons-material/Remove';
+import { setActiveLabel } from './redux/labels'
 
 
 import "./index.css"
@@ -59,8 +66,7 @@ function App() {
   const eventTimes = useSelector((state) => state.label.eventTimes)
   const [gray, setGray] = useState([])
   const [searchText, setSearchText] = useState([]);
-
-  
+  const dispatch = useDispatch()
 
   const handleSearchTextChange = (event) => {
     setSearchText(event.target.value);
@@ -82,6 +88,7 @@ function App() {
   }
 
   useEffect(() => {
+    console.log('setting gray')
     // console.log(displayCourses.filter((course) => !availableTime(course)).map((course) => course.id))
     setGray(displayCourses.filter((course) => !availableTime(course)).map((course) => course.id))
     // setDisplayCourses(displayCourses.map((course) => {
@@ -107,7 +114,7 @@ function App() {
     // setDisplayCatalog(<VirtualizedList courses={displayCourses}/>)
     setDisplayCatalog(<StickyHeadTable style = {{maxHeight: '100%'}} courses = {displayCourses} gray = {gray} />)
     
-  }, [displayCourses, activeLabel, gray])
+  }, [displayCourses, activeLabel, gray, activeLabel])
 
 
 
@@ -143,11 +150,20 @@ function App() {
   
     return;
   }, [searchText]);
+
+  const handleChange = (event) => {
+    dispatch(setActiveLabel(event.target.value))
+  };
   
   return (
     <Grid container spacing = {3}>
       <Grid  item xs = {6} >
           <Calendar  />
+          <ButtonGroup variant = "contained" aria-label="contained button group">
+            <Button>GENED 1162</Button>
+            <Button><VisibilityIcon /></Button>
+            <Button><RemoveIcon /> </Button>
+          </ButtonGroup>
       </Grid>
       <Grid item xs = {6}>
         <div>
@@ -163,7 +179,7 @@ function App() {
                 onChange={handleSearchTextChange}/>
             </Grid>
             <Grid item>
-              <BasicSelect   /> 
+              <BasicSelect  options={label} handleChange = {handleChange} /> 
             </Grid>
           </Grid>
           
