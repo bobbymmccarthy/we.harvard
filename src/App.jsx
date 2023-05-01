@@ -82,6 +82,7 @@ function App() {
   }
 
   useEffect(() => {
+    console.log('setting gray')
     // console.log(displayCourses.filter((course) => !availableTime(course)).map((course) => course.id))
     setGray(displayCourses.filter((course) => !availableTime(course)).map((course) => course.id))
     // setDisplayCourses(displayCourses.map((course) => {
@@ -107,7 +108,7 @@ function App() {
     // setDisplayCatalog(<VirtualizedList courses={displayCourses}/>)
     setDisplayCatalog(<StickyHeadTable style = {{maxHeight: '100%'}} courses = {displayCourses} gray = {gray} />)
     
-  }, [displayCourses, activeLabel, gray])
+  }, [displayCourses, activeLabel, gray, activeLabel])
 
 
 

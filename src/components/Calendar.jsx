@@ -150,7 +150,7 @@ const Calendar = () => {
         // }
         if (clickInfo.event._def.groupId == "notCourse"){
           const events = JSON.parse(localStorage.getItem("events"))
-          localStorage.setItem("events", JSON.stringify(events.filter((event) => event.id != clickInfo.event.publicId)))
+          localStorage.setItem("events", JSON.stringify(events.filter((event) => event.id != clickInfo.event._def.publicId)))
           clickInfo.event.remove()    
         }
         else{
