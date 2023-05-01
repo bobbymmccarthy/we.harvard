@@ -82,6 +82,9 @@ export default function ClassCard() {
         {activeClass.subject} {activeClass.catalogNumber}: {activeClass.title}
       </Typography>
       <Typography sx={{ mb: 1.5 }} color="text.secondary">
+        {activeClass.instructors.map(instructor => instructor.name).join(", ")}
+      </Typography>
+      <Typography sx={{ mb: 1.5 }} color="text.secondary">
         {activeClass.semester} | {" "}
         {activeClass.meetingPatterns && activeClass.meetingPatterns[0] ? `${findAvail(activeClass.meetingPatterns).map((day) => weekdays[day]).join("")} ${convertTime(activeClass.meetingPatterns[0].startTime)}-${convertTime(activeClass.meetingPatterns[0].endTime)}` : "TBA"}
       </Typography>
