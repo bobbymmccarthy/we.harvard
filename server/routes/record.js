@@ -45,7 +45,8 @@ const ObjectId = require("mongodb").ObjectId;
 
 recordRoutes.route("/search").get(async function (req, res) {
     const gened = req.query.gened;
-    const subject = req.query.gened;
+    const subject = req.query.subject;
+    console.log(subject)
     const agg = [
       {
         $search: {
@@ -56,7 +57,7 @@ recordRoutes.route("/search").get(async function (req, res) {
               wildcard: "*"
             },
             // fuzzy: {
-            //     maxEdits: 0
+            //     maxEdits: 1
             // }
           }
         }
@@ -71,7 +72,7 @@ recordRoutes.route("/search").get(async function (req, res) {
       ...(subject ? [
         {
           $match: {
-            Subject: subject
+            subject: subject
           }
         }
       ] : []),
@@ -87,6 +88,97 @@ recordRoutes.route("/search").get(async function (req, res) {
       res.status(500).send('An error occurred while processing the search request');
     }
   });
+
+// recordRoutes.route("/search").get(async function (req, res) {
+//     const gened = req.query.gened;
+//     const subject = req.query.subject;
+//     const agg = [
+//       {
+//         ...(subject ? [
+//             {
+//               $match: {
+//                 Subject: subject
+//               }
+//             },
+//             {
+//               $search: {
+//                 index: "extendedSearch",
+//                 text: {
+//                   query: req.query.query,
+//                   path: {
+//                     wildcard: "*"
+//                   },
+//                 }
+//               }
+//             }
+//           ] : [
+//             {
+//               $search: {
+//                 index: "extendedSearch",
+//                 text: {
+//                   query: req.query.query,
+//                   path: {
+//                     wildcard: "*"
+//                   },
+//                 }
+//               }
+//             }
+//           ]),
+//           ...(gened ? [
+//             {
+//                 $match: {
+//                     GenedType: { $in: [gened] }
+//                 }
+//             },
+//             {
+//               $search: {
+//                 index: "extendedSearch",
+//                 text: {
+//                   query: req.query.query,
+//                   path: {
+//                     wildcard: "*"
+//                   },
+//                 }
+//               }
+//             }
+//           ] : [
+//             {
+//               $search: {
+//                 index: "extendedSearch",
+//                 text: {
+//                   query: req.query.query,
+//                   path: {
+//                     wildcard: "*"
+//                   },
+//                 }
+//               }
+//             }
+//           ]),
+//         $search: {
+//           index: "extendedSearch",
+//           text: {
+//             query: req.query.query,
+//             path: {
+//               wildcard: "*"
+//             },
+//             // fuzzy: {
+//             //     maxEdits: 1
+//             // }
+//           }
+//         }
+//       },
+//     ];
+//     const coll = dbo.getDb("course_catalog").collection("myHarvardExtended");
+//     let cursor = coll.aggregate(agg);
+    
+//     try {
+//       const results = await cursor.toArray();
+//       res.json(results);
+//     } catch (err) {
+//       console.error(err);
+//       res.status(500).send('An error occurred while processing the search request');
+//     }
+//   });
 
   recordRoutes.route("/private_search").get(async function (req, res) {
     const class_id = parseInt(req.query.id);
