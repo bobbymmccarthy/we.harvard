@@ -154,7 +154,7 @@ function App() {
     dispatch(toggleVisibility(course.id))
   }
 
-  handleGenedFilter = (gened) => {
+  const handleGenedFilter = (gened) => {
     console.log(gened)
   }
   
