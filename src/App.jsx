@@ -151,8 +151,11 @@ function App() {
   }
 
   const handleVisibility = (course) => {
-    // console.log(course)
     dispatch(toggleVisibility(course.id))
+  }
+
+  handleGenedFilter = (gened) => {
+    console.log(gened)
   }
   
   return (
@@ -171,8 +174,13 @@ function App() {
       </Grid>
       <Grid item xs = {6}>
         <div>
-          {/* <VirtualizedList classInfo={displayCatalog}/> */}
           <Grid container justifyContent={"center"}>
+          <ButtonGroup variant = "outlined" aria-label="contained button group">
+              <Button onClick = {() => handleGenedFilter(0)} >Aesthetics and Culture </Button>
+              <Button onClick = {() => handleGenedFilter(1)}>Ethics and Civics</Button>
+              <Button onClick = {() => handleGenedFilter(2)}> Histories, Societies, and Individuals </Button>
+              <Button onClick = {() => handleGenedFilter(3)}>Science and Technology in Society</Button>
+            </ButtonGroup>
             <Grid item xs= {8}>
               <TextField 
                 id="outlined-basic"
