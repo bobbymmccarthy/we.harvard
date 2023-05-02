@@ -9,7 +9,7 @@ import Courses from '../courses.json'
 
 import { useSelector, useDispatch} from 'react-redux'
 
-import { addLabel, addEventTimes, nullAddedClass, nullRemovedClass, removeClass } from "../redux/labels";
+import { addLabel, addEventTimes, nullAddedClass, nullRemovedClass, removeClass, removeInvisibleEvents } from "../redux/labels";
 
 const events = [
     {id: createEventId(), title: 'Meeting', start: new Date() }
@@ -41,7 +41,7 @@ const findAvail = (meetingPatterns) => {
 const handleDateSelect = (selectInfo) => {
     let title = "busy"
     let calendarApi = selectInfo.view.calendar
-    console.log(calendarApi.getEvents())
+    // console.log(calendarApi.getEvents())
     calendarApi.unselect() // clear date selection
     const event = {
         id: createEventId(),
@@ -93,16 +93,39 @@ const Calendar = () => {
     const [events, setEvents] = useState([]);
     const [eventTimes, setEventTimes] = useState([]);
     const [displayCourses, setDisplayCourses] = useState(Courses);
-    const [displayCatalog, setDisplayCatalog] = useState(null);
     const label = useSelector((state) => state.label.value)
     const keys = useSelector((state) => state.label.keys)
     const activeLabel = useSelector((state) => state.label.activeLabel)
-    const activeClass = useSelector((state) => state.label.activeClass)
     const addedClass = useSelector((state) => state.label.addedClassInfo)
-    const addedClasses = useSelector((state) => state.label.addedClasses)
     const removedClass = useSelector((state) => state.label.removedClass)
+    const toggleVisible = useSelector((state) => state.label.toggleVisible)
+    const invisibleEvents = useSelector((state) => state.label.invisibleEvents)
     const [classEvents, setClassEvents]  = useState([])
     const dispatch = useDispatch()
+
+    
+    useEffect(() => {
+      const calendarApi = calendarRef.current.getApi();
+      if (toggleVisible.visible){
+        invisibleEvents
+          .filter((event) => event.groupId == toggleVisible.id)
+          .forEach((event) => {
+            calendarApi.addEvent(event)
+          })
+        dispatch(removeInvisibleEvents(toggleVisible.id))
+      }
+      else{
+        calendarApi.getEvents().map((event) => {
+          if (event.groupId == toggleVisible.id){
+            event.remove()
+          }
+        })
+      }
+    }, [toggleVisible])
+
+    useEffect(() => {
+      localStorage.setItem("invisibleEvents", JSON.stringify(invisibleEvents))
+    }, [invisibleEvents])
 
     useEffect(() => {
         localStorage.setItem("value", JSON.stringify(label))
@@ -112,18 +135,13 @@ const Calendar = () => {
     useEffect(() => {
         // localStorage.clear()
         const calendarApi = calendarRef.current.getApi();
-        // console.log(localStorage.getItem("events"))
         const events = JSON.parse(localStorage.getItem("events"))
-        // console.log(JSON.stringify(events))
         if (events && calendarApi.getEvents().length == 0){
             for(let i = 0; i < events.length; i ++){
                 console.log(events[i])
                 calendarApi.addEvent(events[i])
             }
         }
-        
-
-        
     }, [])
 
 
@@ -145,9 +163,6 @@ const Calendar = () => {
     
 
     const handleEventDelete = (clickInfo) => {
-        // if (window.confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'?`)) {
-        //   clickInfo.event.remove()
-        // }
         if (clickInfo.event._def.groupId == "notCourse"){
           const events = JSON.parse(localStorage.getItem("events"))
           localStorage.setItem("events", JSON.stringify(events.filter((event) => event.id != clickInfo.event._def.publicId)))
@@ -158,10 +173,9 @@ const Calendar = () => {
             localStorage.setItem("events", JSON.stringify(prevEvents.filter((event) => event.groupId != clickInfo.event.groupId)))
             dispatch(removeClass(clickInfo.event.groupId))   
         }
-        
       }
-    useEffect(() => {
 
+    useEffect(() => {
         if(addedClass){
             const events = []
             const fullEvents = []

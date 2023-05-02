@@ -8,9 +8,6 @@ import { useSelector, useDispatch } from 'react-redux'
 
 export default function BasicSelect({options, handleChange}) {
 //   const [age, setAge] = React.useState('');
-  const labels = useSelector((state) => state.label.value)
-  const dispatch = useDispatch()
-  
 
   return (
     <Box sx={{ minWidth: 120 }} style = {{marginTop : "25px"}}>

@@ -64,6 +64,7 @@ function App() {
   const activeLabel = useSelector((state) => state.label.activeLabel)
   const activeClass = useSelector((state) => state.label.activeClass)
   const eventTimes = useSelector((state) => state.label.eventTimes)
+  const keys = useSelector((state) => state.label.keys)
   const [gray, setGray] = useState([])
   const [searchText, setSearchText] = useState([]);
   const [selectedSubject, setSubject] = useState([]);
@@ -89,15 +90,7 @@ function App() {
   }
 
   useEffect(() => {
-    console.log('setting gray')
-    // console.log(displayCourses.filter((course) => !availableTime(course)).map((course) => course.id))
     setGray(displayCourses.filter((course) => !availableTime(course)).map((course) => course.id))
-    // setDisplayCourses(displayCourses.map((course) => {
-    //   return {
-    //     ...course,
-    //     gray: !availableTime(course)
-    //   };
-    // }))
   }, [eventTimes])
 
 
@@ -110,11 +103,9 @@ function App() {
     }
   }, [activeLabel])
 
-  // console.log({gray})
+
   useEffect(() => {
-    // setDisplayCatalog(<VirtualizedList courses={displayCourses}/>)
-    setDisplayCatalog(<StickyHeadTable style = {{maxHeight: '100%'}} courses = {displayCourses} gray = {gray} />)
-    
+    setDisplayCatalog(<StickyHeadTable style = {{maxHeight: '100%'}} courses = {displayCourses} gray = {gray} />)   
   }, [displayCourses, activeLabel, gray, activeLabel])
 
 
@@ -222,16 +213,25 @@ function App() {
     <Grid container spacing = {3}>
       <Grid  item xs = {6} >
           <Calendar  />
-          <ButtonGroup variant = "contained" aria-label="contained button group">
-            <Button>GENED 1162</Button>
-            <Button><VisibilityIcon /></Button>
-            <Button><RemoveIcon /> </Button>
-          </ButtonGroup>
+          {label.added &&
+            label.added.map((course) => {
+              return <ButtonGroup variant = "contained" aria-label="contained button group">
+                      <Button>{course.subject} {course.catalogNumber} </Button>
+                      <Button onClick = {() => handleVisibility(course)}><VisibilityIcon /></Button>
+                      <Button onClick={() => handleRemoveClass(course.id)}><RemoveIcon /> </Button>
+                    </ButtonGroup>
+            })}
+          
       </Grid>
       <Grid item xs = {6}>
         <div>
-          {/* <VirtualizedList classInfo={displayCatalog}/> */}
           <Grid container justifyContent={"center"}>
+          <ButtonGroup variant = "outlined" aria-label="contained button group">
+              <Button onClick = {() => handleGenedFilter(0)} >Aesthetics and Culture </Button>
+              <Button onClick = {() => handleGenedFilter(1)}>Ethics and Civics</Button>
+              <Button onClick = {() => handleGenedFilter(2)}> Histories, Societies, and Individuals </Button>
+              <Button onClick = {() => handleGenedFilter(3)}>Science and Technology in Society</Button>
+            </ButtonGroup>
             <Grid item xs= {8}>
               <TextField 
                 id="outlined-basic"
