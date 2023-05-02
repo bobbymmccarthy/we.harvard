@@ -132,29 +132,14 @@ function App() {
 
 
 
-
+  /*
+      CONCEPT: Catalog
+      ACTION: search(), filter()
+      DESC: hits API endpoint for search and filter actions on catalog
+  */
   useEffect(() => {
-    async function fetchData () {
-      const query = searchText;
-      const subject = subjectDescriptions[selectedSubject];
-      
-      const response = await fetch(`http://localhost:5001/search?query=${query}`);
-      if (!response.ok) {
-        const message = `An error has occurred: ${response.statusText}`;
-        window.alert(message);
-        return;
-      }
-  
-      const record = await response.json();
-      if (!record) {
-        window.alert(`Class from query ${id} not found`);
-        navigate("/");
-        return;
-      }
-      setDisplayCourses(record)
 
-    }
-
+    // Search subject data
     async function fetchSubjectData () {
       const subject = subjectDescriptions[selectedSubject];
       
@@ -177,6 +162,7 @@ function App() {
 
     }
 
+    // Search Gened data
     async function fetchGenedData () {
       const gened = formatAsUrl(selectedGened);
       
@@ -197,6 +183,7 @@ function App() {
 
     }
 
+    // Regular query search with subject filter functionality
     async function fetchDataSubjectGenedSearch() {
       let subject = "";
       if (typeof selectedSubject === "string" && selectedSubject != "all" && selectedSubject != '') {
@@ -227,6 +214,7 @@ function App() {
         }
         setDisplayCourses(record);
       }
+      
       // Handle gened search
       else if (gened !== "") {
 
@@ -264,6 +252,7 @@ function App() {
 
     }
 
+    // Determine which endpoint to hit
     if (searchText != "") {
       fetchDataSubjectGenedSearch();
     }
@@ -272,7 +261,6 @@ function App() {
 
       fetchSubjectData();
     }
-    console.log(selectedGened)
     if (selectedGened != "" && searchText == "") {
 
       fetchGenedData();
