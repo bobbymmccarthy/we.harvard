@@ -9,21 +9,21 @@ import StickyHeadTable from "./components/StickyHeadTable";
 import {Grid} from "@mui/material";
 import Calendar from "./components/Calendar";
 import Button from '@mui/material/Button';
+import Select from '@mui/material/Select';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import IconButton from "@mui/material/IconButton";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { setActiveLabel } from './redux/labels'
+import subjectDescriptions from './subject_description.json';
+
 
 
 import "./index.css"
 const events = [
   {id: createEventId(), title: 'Meeting', start: new Date() }
 ]
-
-
-
 
 // a custom render function
 function renderEventContent(eventInfo) {
@@ -66,6 +66,7 @@ function App() {
   const eventTimes = useSelector((state) => state.label.eventTimes)
   const [gray, setGray] = useState([])
   const [searchText, setSearchText] = useState([]);
+  const [selectedSubject, setSubject] = useState([]);
   const dispatch = useDispatch()
 
   const handleSearchTextChange = (event) => {
@@ -118,11 +119,13 @@ function App() {
 
 
 
- 
 
   useEffect(() => {
     async function fetchData () {
       const query = searchText;
+      const subject = subjectDescriptions[selectedSubject];
+      console.log(subject);
+      
       const response = await fetch(`http://localhost:5001/search?query=${query}`);
       // console.log(response);
       if (!response.ok) {
@@ -141,19 +144,79 @@ function App() {
       setDisplayCourses(record)
 
     }
-    // console.log(searchText)
-    if (searchText != "") {
-      // console.log('inside fetch')
-      fetchData();
 
+    async function fetchSubjectData () {
+      const subject = subjectDescriptions[selectedSubject];
+      console.log(subject);
+      
+      // Handle subject change
+      if (subject != 'all') {
+        const response = await fetch(`http://localhost:5001/subject?type=${subject}`);
+        if (!response.ok) {
+          const message = `An error has occurred: ${response.statusText}`;
+          window.alert(message);
+          return;
+        }
+        const record = await response.json();
+        console.log({record});
+        if (!record) {
+          window.alert(`Class from query ${id} not found`);
+          navigate("/");
+          return;
+        }
+        setDisplayCourses(record)
+      }
+
+    }
+
+    async function fetchDataSubjectGenedSearch () {
+      const subject = subjectDescriptions[selectedSubject];
+      const query = searchText;
+      console.log(subject);
+      
+      // Handle subject change
+      if (subject != 'all') {
+        const response = await fetch(`http://localhost:5001/search?query=${query}&subject=${subject}`);
+        if (!response.ok) {
+          const message = `An error has occurred: ${response.statusText}`;
+          window.alert(message);
+          return;
+        }
+        const record = await response.json();
+        console.log({record});
+        if (!record) {
+          window.alert(`Class from query ${id} not found`);
+          navigate("/");
+          return;
+        }
+        setDisplayCourses(record)
+      }
+
+    }
+
+    if (searchText != "" && selectedSubject == "all") {
+      fetchData();
+    }
+
+    if (selectedSubject != "all" && searchText == "") {
+      fetchSubjectData();
+    }
+
+    if (selectedSubject != "all" && searchText != "") {
+      // console.log('inside fetch')
+      fetchDataSubjectGenedSearch();
     }
   
     return;
-  }, [searchText]);
+  }, [searchText, selectedSubject]);
 
-  const handleChange = (event) => {
+  const handleChangeLabel = (event) => {
     dispatch(setActiveLabel(event.target.value))
   };
+
+  const handleChangeSubject = (event) => {
+    setSubject(event.target.value);
+  }
   
   return (
     <Grid container spacing = {3}>
@@ -179,7 +242,10 @@ function App() {
                 onChange={handleSearchTextChange}/>
             </Grid>
             <Grid item>
-              <BasicSelect  options={label} handleChange = {handleChange} /> 
+              <BasicSelect  options={label} handleChange = {handleChangeLabel} /> 
+            </Grid>
+            <Grid item>
+              <BasicSelect  options={subjectDescriptions} handleChange = {handleChangeSubject} /> 
             </Grid>
           </Grid>
           
