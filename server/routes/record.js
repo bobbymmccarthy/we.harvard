@@ -11,39 +11,14 @@ const dbo = require("../db/conn");
 // This help convert the id from string to ObjectId for the _id.
 const ObjectId = require("mongodb").ObjectId;
  
- 
-// recordRoutes.route("/search").get(async function (req, res) {
-//     // const gened = req.query.gened;
-//     // const subjects = req.query.subjects;
-//     const agg = [
-//       {
-//         $search: {
-//           index: "myHarvard_index",
-//           text: {
-//             query: req.query.query, // note the change to use req.query.query instead of req.params.query
-//             path: {
-//               wildcard: "*"
-//             }
-//           }
-//         },
-//       },
-//       {
-//         $limit: 5,
-//       },
-//     ];
-//     const coll = dbo.getDb("course_catalog").collection("myHarvard");
-//     let cursor = coll.aggregate(agg);
-  
-//     try {
-//       const results = await cursor.toArray(); // convert the cursor to an array of results
-//       res.json(results); // return the results as the response
-//     } catch (err) {
-//       console.error(err);
-//       res.status(500).send('An error occurred while processing the search request');
-//     }
-//   });
+
 const genedTypeDict = {'aesthetics-and-culture': "Aesthetics and Culture", 'ethics-and-civics': "Ethics and Civics", "histories-societies-and-individuals": "Histories, Societies, Individuals", "science-and-technology-in-society": "Science and Technology in Society"}
 
+/*
+    CONCEPT: Catalog
+    ACTION: search()
+    DESC: searches through catalog according to query; if subject is defined then search is filtered for subject match
+*/
 recordRoutes.route("/search").get(async function (req, res) {
     const gened = genedTypeDict[req.query.type];
     const subject = (req.query.subject);
@@ -83,7 +58,7 @@ recordRoutes.route("/search").get(async function (req, res) {
     }
   });
 
-
+  // Endpoint for internal search via course ID
   recordRoutes.route("/private_search").get(async function (req, res) {
     const class_id = parseInt(req.query.id);
     const coll = dbo.getDb("course_catalog").collection("myHarvard");
@@ -97,6 +72,12 @@ recordRoutes.route("/search").get(async function (req, res) {
       res.status(500).send('An error occurred while processing the search request');
     }
   });
+
+/*
+    CONCEPT: Catalog
+    ACTION: filter()
+    DESC: filters catalog per specified GenedType
+*/
 
   // Endpoint for retreiving all courses by subject
   recordRoutes.route("/gened").get(async function (req, res) {
@@ -114,6 +95,13 @@ recordRoutes.route("/search").get(async function (req, res) {
       res.status(500).send('An error occurred while processing the search request');
     }
   });
+
+
+/*
+    CONCEPT: Catalog
+    ACTION: filter()
+    DESC: filters catalog per specified Subject
+*/
 
   // Endpoint for retreiving all courses by subject
   recordRoutes.route("/subject").get(async function (req, res) {
