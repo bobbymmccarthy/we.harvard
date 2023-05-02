@@ -128,8 +128,8 @@ function App() {
 
 
   useEffect(() => {
-    setDisplayCatalog(<StickyHeadTable courses = {displayCourses} gray = {gray} start = {0} />)   
-  }, [displayCourses, activeLabel, gray, activeLabel, selectedSubject, selectedGened])
+    setDisplayCatalog(<StickyHeadTable courses = {displayCourses} gray = {gray} />)   
+  }, [displayCourses, activeLabel, gray, activeLabel, selectedSubject, selectedGened, searchText, selectedGened])
 
 
 

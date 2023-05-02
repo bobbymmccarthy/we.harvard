@@ -31,6 +31,10 @@ export default function StickyHeadTable({courses, gray}) {
   const dispatch = useDispatch()
   const keys = useSelector((state) => state.label.keys)
 
+  React.useEffect(() => {
+    setPage(0)
+  }, [courses])
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
