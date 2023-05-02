@@ -7,6 +7,7 @@ import BasicSelect from "./components/BasicSelect";
 import ClassCard from "./components/Class";
 import StickyHeadTable from "./components/StickyHeadTable";
 import {Grid} from "@mui/material";
+import Box from '@mui/material/Box';
 import Calendar from "./components/Calendar";
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
@@ -16,6 +17,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { setActiveLabel } from './redux/labels'
 import { removeClass, addLabel, removeLabel, toggleVisibility } from "./redux/labels";
+import TopBanner from "./components/TopBanner";
 
 import "./index.css"
 const events = [
@@ -104,7 +106,7 @@ function App() {
 
 
   useEffect(() => {
-    setDisplayCatalog(<StickyHeadTable style = {{maxHeight: '100%'}} courses = {displayCourses} gray = {gray} />)   
+    setDisplayCatalog(<StickyHeadTable courses = {displayCourses} gray = {gray} />)   
   }, [displayCourses, activeLabel, gray, activeLabel])
 
 
@@ -159,52 +161,58 @@ function App() {
   }
   
   return (
-    <Grid container spacing = {3}>
-      <Grid  item xs = {6} >
-          <Calendar  />
-          {label.added &&
-            label.added.map((course) => {
-              return <ButtonGroup variant = "contained" aria-label="contained button group">
-                      <Button>{course.subject} {course.catalogNumber} </Button>
-                      <Button onClick = {() => handleVisibility(course)}><VisibilityIcon /></Button>
-                      <Button onClick={() => handleRemoveClass(course.id)}><RemoveIcon /> </Button>
-                    </ButtonGroup>
-            })}
-          
-      </Grid>
-      <Grid item xs = {6}>
-        <div>
-          <Grid container justifyContent={"center"}>
-          <ButtonGroup variant = "outlined" aria-label="contained button group">
-              <Button onClick = {() => handleGenedFilter(0)} >Aesthetics and Culture </Button>
-              <Button onClick = {() => handleGenedFilter(1)}>Ethics and Civics</Button>
-              <Button onClick = {() => handleGenedFilter(2)}> Histories, Societies, and Individuals </Button>
-              <Button onClick = {() => handleGenedFilter(3)}>Science and Technology in Society</Button>
-            </ButtonGroup>
-            <Grid item xs= {8}>
-              <TextField 
-                id="outlined-basic"
-                label="Search" 
-                variant="outlined" 
-                style = {{marginTop : "25px", width: "100%"}} 
-                value={searchText}
-                onChange={handleSearchTextChange}/>
+    <>
+      <TopBanner />
+      <Grid container spacing = {3} >
+        <Grid  item sm = {12} lg = {6} order={{ xs: 2, sm: 2, lg: 1 }}>
+            <Calendar  />
+            <Box container justifyContent={"center"} style ={{marginTop: '10px'}}>
+            {label.added &&
+              label.added.map((course) => {
+                return <ButtonGroup style = {{margin: '10px'}} variant = "contained" aria-label="contained button group">
+                          <Button style = {{maxWidth: "80px"}}>{course.subject} {course.catalogNumber} </Button>
+                          <Button onClick = {() => handleVisibility(course)}><VisibilityIcon /></Button>
+                          <Button onClick={() => handleRemoveClass(course.id)}><RemoveIcon /> </Button>
+                      </ButtonGroup>
+
+              })}
+
+
+            </Box>
+            
+        </Grid>
+        <Grid item sm = {12} lg = {6} order={{ xs: 2, sm: 1, lg: 2 }}>
+          <div>
+            <Grid container justifyContent={"center"}>
+            <ButtonGroup style = {{marginTop: '25px'}} variant = "outlined" aria-label="contained button group">
+                <Button sx = {{fontSize: "12px"}} onClick = {() => handleGenedFilter(0)} >Aesthetics and Culture </Button>
+                <Button sx = {{fontSize: "12px"}} onClick = {() => handleGenedFilter(1)}>Ethics and Civics</Button>
+                <Button sx = {{fontSize: "12px"}} onClick = {() => handleGenedFilter(2)}> Histories, Societies, and Individuals </Button>
+                <Button  sx = {{fontSize: "12px"}}onClick = {() => handleGenedFilter(3)}>Science and Technology in Society</Button>
+              </ButtonGroup>
+              <Grid item xs= {8}>
+                <TextField 
+                  id="outlined-basic"
+                  label="Search" 
+                  variant="outlined" 
+                  style = {{marginTop : "10px", width: "100%"}} 
+                  value={searchText}
+                  onChange={handleSearchTextChange}/>
+              </Grid>
+              <Grid item>
+                <BasicSelect  options={label} handleChange = {handleChange} /> 
+              </Grid>
             </Grid>
-            <Grid item>
-              <BasicSelect  options={label} handleChange = {handleChange} /> 
-            </Grid>
-          </Grid>
-          
-          {/* <h3>{searchText}</h3> */}
-          <Grid item height={'60vh'}>
-            {displayCatalog}
-          </Grid>
-          <Grid item>
-            {activeClass && <ClassCard course = {activeClass} />}
-          </Grid>
-        </div>
+            
+            {/* <h3>{searchText}</h3> */}
+            <Box>
+              {displayCatalog}
+              {activeClass && <ClassCard  course = {activeClass} />}
+            </Box>
+          </div>
+        </Grid>
       </Grid>
-    </Grid>
+    </>
   )
 }
 

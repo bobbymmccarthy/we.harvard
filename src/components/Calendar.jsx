@@ -4,6 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction'
 import { createEventId } from '../event-utils'
+import '../index.css'
 
 import Courses from '../courses.json'
 
@@ -81,9 +82,9 @@ const handleDateSelect = (selectInfo) => {
 // a custom render function
 function renderEventContent(eventInfo) {
     return (
-      <div>
-        <b>{eventInfo.timeText}</b>
-        <i>{eventInfo.event.title}</i>
+      <div style = {{fontFamily: 'Roboto, sans-serif', overflowY: 'hidden'}}>
+        <p style = {{marginTop: '-4px', marginBottom: '-15px'}}>{eventInfo.timeText}</p>
+        <h3>{eventInfo.event.title}</h3>
       </div>
     )
   }
@@ -182,10 +183,9 @@ const Calendar = () => {
             const calendarApi = calendarRef.current.getApi();
             for (let i = 0; i < addedClass.starts.length; i++) {
             const eventId = createEventId();
-            // console.log(addedClass.starts[i])
             const event = {
                 id: eventId,
-                title: addedClass.title,
+                title: `${addedClass.course.subject} ${addedClass.course.catalogNumber}`,
                 groupId: addedClass.id,
                 start: addedClass.starts[i],
                 end: addedClass.ends[i],
@@ -269,10 +269,18 @@ const Calendar = () => {
             eventContent={renderEventContent}
             dayHeaderContent={({ date }, b, c) => {
               return (
-                <div style = {{margin: '-10px'}}>
+                <div style = {{margin: '-10px', fontFamily: 'Roboto, sans-serif'}}>
                     <h3>{weekdays[date.getDay()]}</h3>
                 </div>
                 
+              );
+            }}
+            slotLabelContent={({ date, view }) => {
+              const timeText = date.toLocaleTimeString([], { hour: 'numeric', hour12: true, minute: '2-digit' });
+              return (
+                <div style={{ fontFamily: 'Roboto, sans-serif' }}>
+                  {timeText}
+                </div>
               );
             }}
           />  

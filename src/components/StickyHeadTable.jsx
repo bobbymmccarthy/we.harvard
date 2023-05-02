@@ -83,6 +83,10 @@ export default function StickyHeadTable({courses, gray}) {
   const addClass = (course) => {
     let starts = [];
     let ends = [];
+    if (!course.meetingPatterns || course.meetingPatterns.length == 0){
+      console.log("OH SHIT")
+      return
+    }
     let days = findAvail(course.meetingPatterns)
     for (let i = 0; i < days.length; i++) {
       starts.push(getISO8601Date(days[i], course.meetingPatterns[0].startTime))

@@ -94,9 +94,14 @@ export const labelsSlice = createSlice({
       localStorage.setItem('eventTimes', JSON.stringify(state.eventTimes))
     },
     removeClass: (state, action) => {
+      console.log('remove Class')
       state.addedClasses = state.addedClasses.filter((id) => id != action.payload)
       state.removedClass = action.payload
       state.keys[action.payload] = state.keys[action.payload].filter((currLabel) => 'added' != currLabel )
+      // state.invisibleEvents.forEach((course) => console.log(course.groupId))
+      // console.log(state.invisibleEvents.length)
+      // console.log({id: action.payload, invisibleEvents: state.invisibleEvents[0].groupId})
+      state.invisibleEvents = state.invisibleEvents.filter((course) => action.payload != course.groupId)
       state.value['added'] = state.value['added'].filter((course) => action.payload != course.id)
       if (state.value['added'].length == 0){
         delete state.value["added"]

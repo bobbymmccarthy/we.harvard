@@ -76,7 +76,7 @@ export default function ClassCard() {
   // console.log({activeClass})
 //   console.log(activeClass)
   return (
-    <Box sx={{ minWidth: 275 }}>
+    <Box sx={{ minWidth: 275, marginTop: '10px' }}>
       <Card variant="outlined">
       <CardContent>
       <Typography variant="h5" component="div">

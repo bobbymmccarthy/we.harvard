@@ -1,6 +1,16 @@
 .fc-day-today {
   background-color: inherit !important;
 }
+
+.fc-daygrid-event {
+  overflow: hidden;
+}
+
+.fc-timegrid-event {
+  overflow: hidden;
+}
+
+
 /* .calendar {
   height: 400px;
   width: 600px;
@@ -11,3 +21,4 @@
   height: 60vh;
   width: 50vw;
 }
+

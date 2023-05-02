@@ -10,7 +10,7 @@ export default function BasicSelect({options, handleChange}) {
 //   const [age, setAge] = React.useState('');
 
   return (
-    <Box sx={{ minWidth: 120 }} style = {{marginTop : "25px"}}>
+    <Box sx={{ minWidth: 120 }} style = {{marginTop : "10px", marginBottom: "10px"}}>
       <FormControl fullWidth>
         <InputLabel id="demo-simple-select-label">Labels</InputLabel>
         <Select
