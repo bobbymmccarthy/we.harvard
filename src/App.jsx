@@ -28,7 +28,6 @@ const events = [
   {id: createEventId(), title: 'Meeting', start: new Date() }
 ]
 
-console.log(subjectDescriptions)
 
 // a custom render function
 function renderEventContent(eventInfo) {
@@ -90,6 +89,8 @@ function App() {
   const [searchText, setSearchText] = useState([]);
   const [selectedSubject, setSubject] = useState([]);
   const [selectedGened, setGened] = useState([]);
+  const [buttonClicked, setButtonClicked] = useState(false);
+  const [autocompleteValue, setAutocompleteValue] = useState(null);
   const dispatch = useDispatch()
 
   const handleSearchTextChange = (event) => {
@@ -139,7 +140,6 @@ function App() {
       const subject = subjectDescriptions[selectedSubject];
       
       const response = await fetch(`http://localhost:5001/search?query=${query}`);
-      // console.log(response);
       if (!response.ok) {
         const message = `An error has occurred: ${response.statusText}`;
         window.alert(message);
@@ -147,7 +147,6 @@ function App() {
       }
   
       const record = await response.json();
-      // console.log({record});
       if (!record) {
         window.alert(`Class from query ${id} not found`);
         navigate("/");
@@ -169,7 +168,6 @@ function App() {
           return;
         }
         const record = await response.json();
-        // console.log({record});
         if (!record) {
           window.alert(`Class from query ${id} not found`);
           navigate("/");
@@ -191,7 +189,6 @@ function App() {
         return;
       }
       const record = await response.json();
-      console.log({record});
       if (!record) {
         window.alert(`Class from query ${id} not found`);
         navigate("/");
@@ -202,9 +199,8 @@ function App() {
     }
 
     async function fetchDataSubjectGenedSearch() {
-      console.log(selectedSubject)
       let subject = "";
-      if (typeof selectedSubject === "string" && selectedSubject != "all") {
+      if (typeof selectedSubject === "string" && selectedSubject != "all" && selectedSubject != '') {
         subject = formatAsUrl(subjectDescriptions[selectedSubject]);
       }
       
@@ -214,29 +210,10 @@ function App() {
       if (typeof selectedGened === "string") {
         gened = formatAsUrl(selectedGened);
       }
-      // Handle subject and gened search
-      if (subject !== "" && gened !== "") {
-        console.log("both")
-        const response = await fetch(`http://localhost:5001/search?query=${query}&subject=${subject}&GenedType=${gened}`);
-        if (!response.ok) {
-          const message = `An error has occurred: ${response.statusText}`;
-          window.alert(message);
-          return;
-        }
-        const record = await response.json();
-        console.log({record});
-        if (!record) {
-          window.alert(`Class from query ${id} not found`);
-          navigate("/");
-          return;
-        }
-        setDisplayCourses(record);
-      } 
 
-      else if (subject !== "") {
-        console.log("subject search")
+
+      if (subject !== "") {
         const upper_sub = subject.toUpperCase();
-        console.log(`http://localhost:5001/search?query=${query}&subject=${subject}`)
         const response = await fetch(`http://localhost:5001/search?query=${query}&subject=${upper_sub}`);
         if (!response.ok) {
           const message = `An error has occurred: ${response.statusText}`;
@@ -244,7 +221,6 @@ function App() {
           return;
         }
         const record = await response.json();
-        console.log({record});
         if (!record) {
           window.alert(`Class from query ${id} not found`);
           navigate("/");
@@ -254,7 +230,6 @@ function App() {
       }
       // Handle gened search
       else if (gened !== "") {
-        console.log("gened search")
 
         const response = await fetch(`http://localhost:5001/search?query=${query}&GenedType=${gened}`);
         if (!response.ok) {
@@ -273,7 +248,6 @@ function App() {
       }
 
       else {
-        console.log("both")
         const response = await fetch(`http://localhost:5001/search?query=${query}`);
         if (!response.ok) {
           const message = `An error has occurred: ${response.statusText}`;
@@ -281,7 +255,6 @@ function App() {
           return;
         }
         const record = await response.json();
-        console.log({record});
         if (!record) {
           window.alert(`Class from query ${id} not found`);
           navigate("/");
@@ -293,18 +266,15 @@ function App() {
     }
 
     if (searchText != "") {
-      console.log('searchtext')
       fetchDataSubjectGenedSearch();
     }
 
     if ((selectedSubject != "all" && selectedSubject != "") && searchText == "") {
-      console.log('subject')
 
       fetchSubjectData();
     }
 
     if (selectedGened != "" && searchText == "") {
-      console.log('gened')
 
       fetchGenedData();
     }
@@ -318,12 +288,15 @@ function App() {
   };
 
   const handleChangeSubject = (value) => {
-    console.log('change subject')
     console.log(value)
+    setAutocompleteValue(value); // Reset the Autocomplete component
     setSubject(value);
   }
 
   function handleGenedFilter (genedType) {
+    setSearchText('');
+    setSubject('');
+    setAutocompleteValue(null); // Reset the Autocomplete component
     setGened(genedType);
   }
 
@@ -380,6 +353,7 @@ function App() {
                 disablePortal
                 id="combo-box-demo"
                 options={Object.keys(subjectDescriptions)}
+                value={autocompleteValue}
                 onChange ={(event, newValue) => handleChangeSubject(newValue)}
                 sx = {{maxWidth: "100%", marginTop:'10px'}}
                 renderInput={(params) => <TextField {...params} label="Subject" />}

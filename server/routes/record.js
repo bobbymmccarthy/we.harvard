@@ -46,11 +46,8 @@ const genedTypeDict = {'aesthetics-and-culture': "Aesthetics and Culture", 'ethi
 
 recordRoutes.route("/search").get(async function (req, res) {
     const gened = genedTypeDict[req.query.type];
-    const subject = (req.query.subject).toUpperCase();
-    console.log('gened')
-    console.log(gened)
-    console.log('subject')
-    console.log(subject)
+    const subject = (req.query.subject);
+
     const agg = [
       {
         $search: {
@@ -66,13 +63,6 @@ recordRoutes.route("/search").get(async function (req, res) {
           }
         }
       },
-    //   ...(gened ? [
-    //     {
-    //       $match: {
-    //         GenedType: { $in: [gened] }
-    //       }
-    //     }
-    //   ] : []),
       ...(subject ? [
         {
           $match: {
