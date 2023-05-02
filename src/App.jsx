@@ -29,15 +29,6 @@ const events = [
 ]
 
 
-// a custom render function
-function renderEventContent(eventInfo) {
-  return (
-    <div>
-      <b>{eventInfo.timeText}</b>
-      <i>{eventInfo.event.title}</i>
-    </div>
-  )
-}
 
 function formatAsUrl(str) {
   // Check if the argument is a string
@@ -96,6 +87,11 @@ function App() {
     setSearchText(event.target.value);
   }
 
+  /*
+      CONCEPT: Schedule
+      ACTION: filter()
+      DESC: helper function which is used to determine if course overlaps with any of current times on the calendar
+  */
   const availableTime = (course) => {
     if (!course.meetingPatterns || course.meetingPatterns.length == 0){
       return true
@@ -111,11 +107,20 @@ function App() {
     return true
   }
 
+  /*
+      CONCEPT: Schedule
+      ACTION: filter()
+      DESC: grays out the classes which overlap with any events on the calendar
+  */
   useEffect(() => {
     setGray(displayCourses.filter((course) => !availableTime(course)).map((course) => course.id))
   }, [eventTimes])
 
-
+  /*
+      CONCEPT: Catalog
+      ACTION: filter()
+      DESC: displays all of the courses that correspond to a certain label
+  */
   useEffect(() => {
     if (activeLabel){
       setDisplayCourses(label[activeLabel])
@@ -125,7 +130,11 @@ function App() {
     }
   }, [activeLabel])
 
-
+  /*
+      CONCEPT: Catalog
+      ACTION: filter()
+      DESC: displays all of the filtered courses to the user
+  */
   useEffect(() => {
     setDisplayCatalog(<StickyHeadTable courses = {displayCourses} gray = {gray} />)   
   }, [displayCourses, activeLabel, gray, activeLabel, selectedSubject, selectedGened, searchText, selectedGened])

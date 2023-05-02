@@ -18,27 +18,11 @@ const events = [
 const weekdays = ["Sunday","Mon","Tue","Wed","Thu","Fri","Saturday"]
 const labels = {}
 
-const findAvail = (meetingPatterns) => {
-    const days = []
-    // console.log({meetingPatterns})
-    if(meetingPatterns[0].meetsOnMonday){
-        days.push(1);
-    }
-    if(meetingPatterns[0].meetsOnTuesday){
-        days.push(2);
-    }
-    if(meetingPatterns[0].meetsOnWednesday){
-        days.push(3);
-    }
-    if(meetingPatterns[0].meetsOnThursday){
-        days.push(4);
-    }
-    if(meetingPatterns[0].meetsOnFriday){
-        days.push(5);
-    }
-    return days
-  }
-
+/*
+      CONCEPT: Schedule
+      ACTION: add_event()
+      DESC: allows user to add nonclass events to their schedule via click and drag
+  */
 const handleDateSelect = (selectInfo) => {
     let title = "busy"
     let calendarApi = selectInfo.view.calendar
@@ -62,23 +46,6 @@ const handleDateSelect = (selectInfo) => {
     }
   }
 
-  const availableTime = (course, eventTimes) => {
-    // console.log(course.meetingPatterns)
-    if (!course.meetingPatterns || course.meetingPatterns.length == 0){
-      return true
-    }
-    const busy = findAvail(course.meetingPatterns)
-    let currStartTime = parseInt(course.meetingPatterns[0].startTime.substring(0, 2)) + parseInt(course.meetingPatterns[0].startTime.substring(3, 5)) / 60.0 
-    let currEndTime = parseInt(course.meetingPatterns[0].endTime.substring(0, 2)) + parseInt(course.meetingPatterns[0].endTime.substring(3, 5)) / 60.0
-    // console.log({currStartTime, currEndTime})
-    for(let i = 0; i < eventTimes.length; i++){
-      if(busy.includes(eventTimes[i].start.day) && !(currStartTime >= eventTimes[i].end.hour || currEndTime <= eventTimes[i].start.hour)){
-        return false
-      }
-    }
-    return true
-  }
-
 // a custom render function
 function renderEventContent(eventInfo) {
     return (
@@ -92,8 +59,6 @@ function renderEventContent(eventInfo) {
 const Calendar = () => {
     const calendarRef = useRef(null);
     const [events, setEvents] = useState([]);
-    const [eventTimes, setEventTimes] = useState([]);
-    const [displayCourses, setDisplayCourses] = useState(Courses);
     const label = useSelector((state) => state.label.value)
     const keys = useSelector((state) => state.label.keys)
     const activeLabel = useSelector((state) => state.label.activeLabel)
@@ -104,7 +69,11 @@ const Calendar = () => {
     const [classEvents, setClassEvents]  = useState([])
     const dispatch = useDispatch()
 
-    
+    /*
+      CONCEPT: Schedule
+      ACTION: toggle_visibility()
+      DESC: allows users to change the visibility of their classes on the calendar
+  */
     useEffect(() => {
       const calendarApi = calendarRef.current.getApi();
       if (toggleVisible.visible){
@@ -128,11 +97,13 @@ const Calendar = () => {
       localStorage.setItem("invisibleEvents", JSON.stringify(invisibleEvents))
     }, [invisibleEvents])
 
+    //allow the labels to persist through refresh
     useEffect(() => {
         localStorage.setItem("value", JSON.stringify(label))
         localStorage.setItem("keys", JSON.stringify(keys))
       }, [label])
 
+    //re add events to calendar after refresh
     useEffect(() => {
         // localStorage.clear()
         const calendarApi = calendarRef.current.getApi();
@@ -145,7 +116,11 @@ const Calendar = () => {
         }
     }, [])
 
-
+    /*
+      CONCEPT: Schedule
+      ACTION: delete()
+      DESC: deletes all events corresponding to a specific class
+  */
     useEffect(() => {
         if(removedClass)
         {
@@ -162,7 +137,12 @@ const Calendar = () => {
         }
     }, [removedClass])
     
-
+    /*
+      CONCEPT: Schedule
+      ACTION: delete()
+      DESC: deletes events that the user clicked on, deletes singular event if not a course
+            but deletes all corresponding events if it is a class
+  */
     const handleEventDelete = (clickInfo) => {
         if (clickInfo.event._def.groupId == "notCourse"){
           const events = JSON.parse(localStorage.getItem("events"))
@@ -175,7 +155,12 @@ const Calendar = () => {
             dispatch(removeClass(clickInfo.event.groupId))   
         }
       }
-
+    
+    /*
+      CONCEPT: Schedule
+      ACTION: add_course()
+      DESC: adds all of the class events associated with a certain course
+     */
     useEffect(() => {
         if(addedClass){
             const events = []
@@ -205,17 +190,12 @@ const Calendar = () => {
 
     }}, [addedClass])
 
-
-
-    useEffect(() => {
-        if (activeLabel){
-            setDisplayCourses(label[activeLabel])
-        }
-        else {
-            setDisplayCourses(Courses)
-        }
-    }, [activeLabel])
-
+    /*
+      CONCEPT: Schedule
+      ACTION: filter()
+      DESC: helper function to  collect all of the event times of calendar events to allow
+            for filtering by availability
+  */
 
     useEffect(() => {
     const calendarApi = calendarRef.current.getApi();
@@ -229,7 +209,6 @@ const Calendar = () => {
                     hour: event.end.getHours() + event.end.getMinutes()/ 60.0}}
         });
         dispatch(addEventTimes(currEventTimes))
-        setEventTimes(currEventTimes)
         setEvents(clientEvents);
     }
 

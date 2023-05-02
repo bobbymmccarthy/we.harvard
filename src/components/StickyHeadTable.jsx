@@ -25,7 +25,6 @@ const columns = [
 
 
 export default function StickyHeadTable({courses, gray}) {
-  // console.log({gray})
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const dispatch = useDispatch()
@@ -99,17 +98,26 @@ export default function StickyHeadTable({courses, gray}) {
     // addClasstoCalendar
   }
 
+  /*
+      CONCEPT: Schedule
+      ACTION: delete()
+      DESC: removes class from calendar by ID
+  */
   const handleRemoveClass = (id) => {
     const prevEvents = JSON.parse(localStorage.getItem("events"))
     localStorage.setItem("events", JSON.stringify(prevEvents.filter((event) => event.groupId != id)))
     dispatch(removeClass(id))
   }
-
+  /*
+      CONCEPT: Course
+      ACTION: removeLabel()
+      DESC: removes label with course id: id
+  */
   const handleDelete = (id, label) => {
-    console.info('You clicked the delete icon.');
     dispatch(removeLabel({id, label}))
   };
 
+  //formats data to be displayed in table
   const createData = (course) => {
     // console.log({gray})
     return { courseNum: <div style = {{display: "flex", alignItems: "center"}}> 
@@ -124,6 +132,8 @@ export default function StickyHeadTable({courses, gray}) {
             id: course.id,
             course: course};
   }
+
+  //sets active class in order to see class descriptions
   const handleClick = (course) => {
     dispatch(setActiveClass(course))
   }

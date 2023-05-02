@@ -30,17 +30,17 @@ export default function FormDialog(props) {
     setOpen(false);
   };
 
+  /*
+      CONCEPT: Course
+      ACTION: add_label()
+      DESC: adds label to a specific course
+  */
   const handleCreate = () => {
     dispatch(addLabel({course: props.course, label: searchText != "" ? searchText: selectedOption }))
     setOpen(false)
     setShowText(false)
     setSelectedOption(null)
   }
-
-  React.useEffect(() => {
-    console.log(selectedOption == null)
-    console.log(searchText == "")
-  }, [selectedOption])
 
   const handleLabelClick = () => {
     setShowText(!showText)
@@ -55,6 +55,14 @@ export default function FormDialog(props) {
     }
   }, [showText])
 
+
+  /*
+      CONCEPT: Course
+      ACTION: add_label()
+      DESC: prompts user to add label to the course they clicked on
+            allows them to pick between labels they have specified
+            or make a new labels
+  */
   return (
     <div>
       <IconButton onClick={handleClickOpen}> 
