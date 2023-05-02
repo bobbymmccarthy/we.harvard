@@ -89,7 +89,6 @@ function App() {
   const [searchText, setSearchText] = useState([]);
   const [selectedSubject, setSubject] = useState([]);
   const [selectedGened, setGened] = useState([]);
-  const [buttonClicked, setButtonClicked] = useState(false);
   const [autocompleteValue, setAutocompleteValue] = useState(null);
   const dispatch = useDispatch()
 
