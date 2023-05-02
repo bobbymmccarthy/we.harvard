@@ -7,14 +7,6 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { useSelector} from 'react-redux'
 
-const bull = (
-  <Box
-    component="span"
-    sx={{ display: 'inline-block', mx: '2px', transform: 'scale(0.8)' }}
-  >
-    •
-  </Box>
-);
 
 const weekdays = ["S","M","Tu","W","Th","F","S"]
 
@@ -76,7 +68,7 @@ export default function ClassCard() {
   // console.log({activeClass})
 //   console.log(activeClass)
   return (
-    <Box sx={{ minWidth: 275, marginTop: '10px' }}>
+    <Box sx={{ minWidth: 275, marginTop: '10px', overflowY: "scroll" }}>
       <Card variant="outlined">
       <CardContent>
       <Typography variant="h5" component="div">
@@ -91,11 +83,11 @@ export default function ClassCard() {
       </Typography>
       <Typography sx={{ mb: 1.5 }} color="text.secondary">
         <span>
-          <a href={generateSyllabusURL(activeClass.externalId)}>Syllabus</a>
+          <a href={generateSyllabusURL(activeClass.externalId)} target="_blank">Syllabus</a>
         </span>
         &nbsp;
         <span>
-          <a href={generateQURL(activeClass.academicGroup,activeClass.subject, activeClass.catalogNumber)}>Q Guide</a>
+          <a href={generateQURL(activeClass.academicGroup,activeClass.subject, activeClass.catalogNumber)} target="_blank">Q Guide</a>
         </span>
       </Typography>
       <Typography variant="body2">

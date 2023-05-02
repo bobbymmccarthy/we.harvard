@@ -6,26 +6,29 @@ import { useSelector, useDispatch} from 'react-redux';
 import BasicSelect from "./components/BasicSelect";
 import ClassCard from "./components/Class";
 import StickyHeadTable from "./components/StickyHeadTable";
-import {Grid} from "@mui/material";
+import {Container, Grid} from "@mui/material";
 import Box from '@mui/material/Box';
 import Calendar from "./components/Calendar";
 import Button from '@mui/material/Button';
+import Select from '@mui/material/Select';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import IconButton from "@mui/material/IconButton";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { setActiveLabel } from './redux/labels'
-import { removeClass, addLabel, removeLabel, toggleVisibility } from "./redux/labels";
+import subjectDescriptions from './subject_description.json';
 import TopBanner from "./components/TopBanner";
+import { toggleVisibility, removeClass } from "./redux/labels";
+import Autocomplete from '@mui/material/Autocomplete';
+
 
 import "./index.css"
 const events = [
   {id: createEventId(), title: 'Meeting', start: new Date() }
 ]
 
-
-
+console.log(subjectDescriptions)
 
 // a custom render function
 function renderEventContent(eventInfo) {
@@ -35,6 +38,24 @@ function renderEventContent(eventInfo) {
       <i>{eventInfo.event.title}</i>
     </div>
   )
+}
+
+function formatAsUrl(str) {
+  // Check if the argument is a string
+  if (typeof str !== 'string') {
+    throw new TypeError('Expected a string');
+  }
+  
+  // Convert the string to lowercase
+  let urlStr = str.toLowerCase();
+  
+  // Replace spaces with dashes
+  urlStr = urlStr.replace(/ /g, '-');
+  
+  // Remove any non-alphanumeric characters
+  urlStr = urlStr.replace(/[^a-z0-9-]/g, '');
+  
+  return urlStr;
 }
 
 const findAvail = (meetingPatterns) => {
@@ -58,9 +79,7 @@ const findAvail = (meetingPatterns) => {
 }
 
 function App() {
-  const calendarRef = useRef(null);
-  const [events, setEvents] = useState([]);
-  const [displayCourses, setDisplayCourses] = useState(Courses);
+  const [displayCourses, setDisplayCourses] = useState([]);
   const [displayCatalog, setDisplayCatalog] = useState(null);
   const label = useSelector((state) => state.label.value)
   const activeLabel = useSelector((state) => state.label.activeLabel)
@@ -69,6 +88,8 @@ function App() {
   const keys = useSelector((state) => state.label.keys)
   const [gray, setGray] = useState([])
   const [searchText, setSearchText] = useState([]);
+  const [selectedSubject, setSubject] = useState([]);
+  const [selectedGened, setGened] = useState([]);
   const dispatch = useDispatch()
 
   const handleSearchTextChange = (event) => {
@@ -100,22 +121,23 @@ function App() {
       setDisplayCourses(label[activeLabel])
     }
     else {
-      setDisplayCourses(Courses)
+      setDisplayCatalog([])
     }
   }, [activeLabel])
 
 
   useEffect(() => {
-    setDisplayCatalog(<StickyHeadTable courses = {displayCourses} gray = {gray} />)   
-  }, [displayCourses, activeLabel, gray, activeLabel])
+    setDisplayCatalog(<StickyHeadTable courses = {displayCourses} gray = {gray} start = {0} />)   
+  }, [displayCourses, activeLabel, gray, activeLabel, selectedSubject, selectedGened])
 
 
 
- 
 
   useEffect(() => {
     async function fetchData () {
       const query = searchText;
+      const subject = subjectDescriptions[selectedSubject];
+      
       const response = await fetch(`http://localhost:5001/search?query=${query}`);
       // console.log(response);
       if (!response.ok) {
@@ -124,6 +146,50 @@ function App() {
         return;
       }
   
+      const record = await response.json();
+      // console.log({record});
+      if (!record) {
+        window.alert(`Class from query ${id} not found`);
+        navigate("/");
+        return;
+      }
+      setDisplayCourses(record)
+
+    }
+
+    async function fetchSubjectData () {
+      const subject = subjectDescriptions[selectedSubject];
+      
+      // Handle subject change
+      if (subject != 'all') {
+        const response = await fetch(`http://localhost:5001/subject?type=${subject}`);
+        if (!response.ok) {
+          const message = `An error has occurred: ${response.statusText}`;
+          window.alert(message);
+          return;
+        }
+        const record = await response.json();
+        // console.log({record});
+        if (!record) {
+          window.alert(`Class from query ${id} not found`);
+          navigate("/");
+          return;
+        }
+        setDisplayCourses(record)
+      }
+
+    }
+
+    async function fetchGenedData () {
+      const gened = formatAsUrl(selectedGened);
+      
+    // Handle subject change
+      const response = await fetch(`http://localhost:5001/gened?type=${gened}`);
+      if (!response.ok) {
+        const message = `An error has occurred: ${response.statusText}`;
+        window.alert(message);
+        return;
+      }
       const record = await response.json();
       console.log({record});
       if (!record) {
@@ -134,30 +200,141 @@ function App() {
       setDisplayCourses(record)
 
     }
-    if (searchText != "") {
-      fetchData();
+
+    async function fetchDataSubjectGenedSearch() {
+      console.log(selectedSubject)
+      let subject = "";
+      if (typeof selectedSubject === "string" && selectedSubject != "all") {
+        subject = formatAsUrl(subjectDescriptions[selectedSubject]);
+      }
+      
+      const query = searchText;
+      
+      let gened = "";
+      if (typeof selectedGened === "string") {
+        gened = formatAsUrl(selectedGened);
+      }
+      // Handle subject and gened search
+      if (subject !== "" && gened !== "") {
+        console.log("both")
+        const response = await fetch(`http://localhost:5001/search?query=${query}&subject=${subject}&GenedType=${gened}`);
+        if (!response.ok) {
+          const message = `An error has occurred: ${response.statusText}`;
+          window.alert(message);
+          return;
+        }
+        const record = await response.json();
+        console.log({record});
+        if (!record) {
+          window.alert(`Class from query ${id} not found`);
+          navigate("/");
+          return;
+        }
+        setDisplayCourses(record);
+      } 
+
+      else if (subject !== "") {
+        console.log("subject search")
+        const upper_sub = subject.toUpperCase();
+        console.log(`http://localhost:5001/search?query=${query}&subject=${subject}`)
+        const response = await fetch(`http://localhost:5001/search?query=${query}&subject=${upper_sub}`);
+        if (!response.ok) {
+          const message = `An error has occurred: ${response.statusText}`;
+          window.alert(message);
+          return;
+        }
+        const record = await response.json();
+        console.log({record});
+        if (!record) {
+          window.alert(`Class from query ${id} not found`);
+          navigate("/");
+          return;
+        }
+        setDisplayCourses(record);
+      }
+      // Handle gened search
+      else if (gened !== "") {
+        console.log("gened search")
+
+        const response = await fetch(`http://localhost:5001/search?query=${query}&GenedType=${gened}`);
+        if (!response.ok) {
+          const message = `An error has occurred: ${response.statusText}`;
+          window.alert(message);
+          return;
+        }
+        const record = await response.json();
+        console.log({record});
+        if (!record) {
+          window.alert(`Class from query ${id} not found`);
+          navigate("/");
+          return;
+        }
+        setDisplayCourses(record);
+      }
+
+      else {
+        console.log("both")
+        const response = await fetch(`http://localhost:5001/search?query=${query}`);
+        if (!response.ok) {
+          const message = `An error has occurred: ${response.statusText}`;
+          window.alert(message);
+          return;
+        }
+        const record = await response.json();
+        console.log({record});
+        if (!record) {
+          window.alert(`Class from query ${id} not found`);
+          navigate("/");
+          return;
+        }
+        setDisplayCourses(record);
+      } 
 
     }
+
+    if (searchText != "") {
+      console.log('searchtext')
+      fetchDataSubjectGenedSearch();
+    }
+
+    if ((selectedSubject != "all" && selectedSubject != "") && searchText == "") {
+      console.log('subject')
+
+      fetchSubjectData();
+    }
+
+    if (selectedGened != "" && searchText == "") {
+      console.log('gened')
+
+      fetchGenedData();
+    }
+
   
     return;
-  }, [searchText]);
+  }, [searchText, selectedSubject, selectedGened]);
 
-  const handleChange = (event) => {
+  const handleChangeLabel = (event) => {
     dispatch(setActiveLabel(event.target.value))
   };
 
-  const handleRemoveClass = (id) => {
-    const prevEvents = JSON.parse(localStorage.getItem("events"))
-    localStorage.setItem("events", JSON.stringify(prevEvents.filter((event) => event.groupId != id)))
-    dispatch(removeClass(id))
+  const handleChangeSubject = (value) => {
+    console.log('change subject')
+    console.log(value)
+    setSubject(value);
+  }
+
+  function handleGenedFilter (genedType) {
+    setGened(genedType);
   }
 
   const handleVisibility = (course) => {
     dispatch(toggleVisibility(course.id))
   }
 
-  const handleGenedFilter = (gened) => {
-    console.log(gened)
+  const handleRemoveClass = (id) => {
+    const prevEvents = JSON.parse(localStorage.getItem("events"))
+    localStorage.setItem("events", JSON.stringify(prevEvents.filter((event) => event.groupId != id)))
+    dispatch(removeClass(id))
   }
   
   return (
@@ -176,21 +353,17 @@ function App() {
                       </ButtonGroup>
 
               })}
-
-
             </Box>
-            
         </Grid>
-        <Grid item sm = {12} lg = {6} order={{ xs: 2, sm: 1, lg: 2 }}>
-          <div>
+        <Grid item sm = {12} lg = {6} order={{ xs: 1, sm: 1,  lg: 2 }}>
             <Grid container justifyContent={"center"}>
             <ButtonGroup style = {{marginTop: '25px'}} variant = "outlined" aria-label="contained button group">
-                <Button sx = {{fontSize: "12px"}} onClick = {() => handleGenedFilter(0)} >Aesthetics and Culture </Button>
-                <Button sx = {{fontSize: "12px"}} onClick = {() => handleGenedFilter(1)}>Ethics and Civics</Button>
-                <Button sx = {{fontSize: "12px"}} onClick = {() => handleGenedFilter(2)}> Histories, Societies, and Individuals </Button>
-                <Button  sx = {{fontSize: "12px"}}onClick = {() => handleGenedFilter(3)}>Science and Technology in Society</Button>
+                <Button sx = {{fontSize: "12px"}} onClick = {() => handleGenedFilter("Aesthetics and Culture")} >Aesthetics and Culture</Button>
+                <Button sx = {{fontSize: "12px"}} onClick = {() => handleGenedFilter("Ethics and Civics")}>Ethics and Civics</Button>
+                <Button sx = {{fontSize: "12px"}} onClick = {() => handleGenedFilter("Histories, Societies, and Individuals")}>Histories, Societies, and Individuals</Button>
+                <Button  sx = {{fontSize: "12px"}}onClick = {() => handleGenedFilter("Science and Technology in Society")}>Science and Technology in Society</Button>
               </ButtonGroup>
-              <Grid item xs= {8}>
+              <Grid item xs={12} md={5}>
                 <TextField 
                   id="outlined-basic"
                   label="Search" 
@@ -199,8 +372,18 @@ function App() {
                   value={searchText}
                   onChange={handleSearchTextChange}/>
               </Grid>
-              <Grid item>
-                <BasicSelect  options={label} handleChange = {handleChange} /> 
+              <Grid item xs={12} sm ={6} md={3}>
+                <BasicSelect  options={label} handleChange = {handleChangeLabel} />
+              </Grid>
+              <Grid item xs={12} sm ={6} md={4}>
+              <Autocomplete
+                disablePortal
+                id="combo-box-demo"
+                options={Object.keys(subjectDescriptions)}
+                onChange ={(event, newValue) => handleChangeSubject(newValue)}
+                sx = {{maxWidth: "100%", marginTop:'10px'}}
+                renderInput={(params) => <TextField {...params} label="Subject" />}
+              />
               </Grid>
             </Grid>
             
@@ -209,7 +392,6 @@ function App() {
               {displayCatalog}
               {activeClass && <ClassCard  course = {activeClass} />}
             </Box>
-          </div>
         </Grid>
       </Grid>
     </>

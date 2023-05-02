@@ -10,10 +10,11 @@ import TableRow from '@mui/material/TableRow';
 import FormDialog from './FormDialog';
 import { useSelector} from 'react-redux'
 import { useDispatch } from 'react-redux'
-import { setActiveClass, addClassToCalendar, removeClass } from '../redux/labels'
+import { setActiveClass, addClassToCalendar, removeClass, removeLabel } from '../redux/labels'
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import IconButton from '@mui/material/IconButton';
+import Chip from '@mui/material/Chip';
 
 const columns = [
 
@@ -28,7 +29,6 @@ export default function StickyHeadTable({courses, gray}) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const dispatch = useDispatch()
-  
   const keys = useSelector((state) => state.label.keys)
 
   const handleChangePage = (event, newPage) => {
@@ -84,7 +84,6 @@ export default function StickyHeadTable({courses, gray}) {
     let starts = [];
     let ends = [];
     if (!course.meetingPatterns || course.meetingPatterns.length == 0){
-      console.log("OH SHIT")
       return
     }
     let days = findAvail(course.meetingPatterns)
@@ -102,6 +101,11 @@ export default function StickyHeadTable({courses, gray}) {
     dispatch(removeClass(id))
   }
 
+  const handleDelete = (id, label) => {
+    console.info('You clicked the delete icon.');
+    dispatch(removeLabel({id, label}))
+  };
+
   const createData = (course) => {
     // console.log({gray})
     return { courseNum: <div style = {{display: "flex", alignItems: "center"}}> 
@@ -112,7 +116,7 @@ export default function StickyHeadTable({courses, gray}) {
                             {`${course.subject} ${course.catalogNumber}`} 
                         </div>, 
             title: course.title, 
-            labels: keys[course.id] ? keys[course.id].join(','): "", 
+            labels: keys[course.id] ? keys[course.id].map((label) => label == "added" ? <Chip label={label} /> : <Chip label={label} onDelete={() => handleDelete(course.id, label)} />): "", 
             id: course.id,
             course: course};
   }
@@ -123,7 +127,7 @@ export default function StickyHeadTable({courses, gray}) {
 
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-      <TableContainer sx={{ maxHeight: '54vh' }}>
+      <TableContainer sx={{ maxHeight: '40vh' }}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
