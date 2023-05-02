@@ -273,10 +273,12 @@ function App() {
 
       fetchSubjectData();
     }
-
+    console.log(selectedGened)
     if (selectedGened != "" && searchText == "") {
 
       fetchGenedData();
+      setGened('');
+
     }
 
   
@@ -288,7 +290,6 @@ function App() {
   };
 
   const handleChangeSubject = (value) => {
-    console.log(value)
     setAutocompleteValue(value); // Reset the Autocomplete component
     setSubject(value);
   }
