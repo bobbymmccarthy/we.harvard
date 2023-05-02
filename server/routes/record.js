@@ -42,10 +42,14 @@ const ObjectId = require("mongodb").ObjectId;
 //       res.status(500).send('An error occurred while processing the search request');
 //     }
 //   });
+const genedTypeDict = {'aesthetics-and-culture': "Aesthetics and Culture", 'ethics-and-civics': "Ethics and Civics", "histories-societies-and-individuals": "Histories, Societies, Individuals", "science-and-technology-in-society": "Science and Technology in Society"}
 
 recordRoutes.route("/search").get(async function (req, res) {
-    const gened = req.query.gened;
-    const subject = req.query.subject;
+    const gened = genedTypeDict[req.query.type];
+    const subject = (req.query.subject).toUpperCase();
+    console.log('gened')
+    console.log(gened)
+    console.log('subject')
     console.log(subject)
     const agg = [
       {
@@ -62,13 +66,13 @@ recordRoutes.route("/search").get(async function (req, res) {
           }
         }
       },
-      ...(gened ? [
-        {
-          $match: {
-            GenedType: { $in: [gened] }
-          }
-        }
-      ] : []),
+    //   ...(gened ? [
+    //     {
+    //       $match: {
+    //         GenedType: { $in: [gened] }
+    //       }
+    //     }
+    //   ] : []),
       ...(subject ? [
         {
           $match: {
@@ -89,96 +93,6 @@ recordRoutes.route("/search").get(async function (req, res) {
     }
   });
 
-// recordRoutes.route("/search").get(async function (req, res) {
-//     const gened = req.query.gened;
-//     const subject = req.query.subject;
-//     const agg = [
-//       {
-//         ...(subject ? [
-//             {
-//               $match: {
-//                 Subject: subject
-//               }
-//             },
-//             {
-//               $search: {
-//                 index: "extendedSearch",
-//                 text: {
-//                   query: req.query.query,
-//                   path: {
-//                     wildcard: "*"
-//                   },
-//                 }
-//               }
-//             }
-//           ] : [
-//             {
-//               $search: {
-//                 index: "extendedSearch",
-//                 text: {
-//                   query: req.query.query,
-//                   path: {
-//                     wildcard: "*"
-//                   },
-//                 }
-//               }
-//             }
-//           ]),
-//           ...(gened ? [
-//             {
-//                 $match: {
-//                     GenedType: { $in: [gened] }
-//                 }
-//             },
-//             {
-//               $search: {
-//                 index: "extendedSearch",
-//                 text: {
-//                   query: req.query.query,
-//                   path: {
-//                     wildcard: "*"
-//                   },
-//                 }
-//               }
-//             }
-//           ] : [
-//             {
-//               $search: {
-//                 index: "extendedSearch",
-//                 text: {
-//                   query: req.query.query,
-//                   path: {
-//                     wildcard: "*"
-//                   },
-//                 }
-//               }
-//             }
-//           ]),
-//         $search: {
-//           index: "extendedSearch",
-//           text: {
-//             query: req.query.query,
-//             path: {
-//               wildcard: "*"
-//             },
-//             // fuzzy: {
-//             //     maxEdits: 1
-//             // }
-//           }
-//         }
-//       },
-//     ];
-//     const coll = dbo.getDb("course_catalog").collection("myHarvardExtended");
-//     let cursor = coll.aggregate(agg);
-    
-//     try {
-//       const results = await cursor.toArray();
-//       res.json(results);
-//     } catch (err) {
-//       console.error(err);
-//       res.status(500).send('An error occurred while processing the search request');
-//     }
-//   });
 
   recordRoutes.route("/private_search").get(async function (req, res) {
     const class_id = parseInt(req.query.id);
@@ -196,7 +110,8 @@ recordRoutes.route("/search").get(async function (req, res) {
 
   // Endpoint for retreiving all courses by subject
   recordRoutes.route("/gened").get(async function (req, res) {
-    const gened_type = req.query.type;
+
+    const gened_type = genedTypeDict[req.query.type];
     const coll = dbo.getDb("course_catalog").collection("myHarvardExtended");
     const query = { GenedType: { $in: [gened_type] } };
   

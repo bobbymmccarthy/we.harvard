@@ -18,8 +18,6 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import { setActiveLabel } from './redux/labels'
 import subjectDescriptions from './subject_description.json';
 
-
-
 import "./index.css"
 const events = [
   {id: createEventId(), title: 'Meeting', start: new Date() }
@@ -33,6 +31,24 @@ function renderEventContent(eventInfo) {
       <i>{eventInfo.event.title}</i>
     </div>
   )
+}
+
+function formatAsUrl(str) {
+  // Check if the argument is a string
+  if (typeof str !== 'string') {
+    throw new TypeError('Expected a string');
+  }
+  
+  // Convert the string to lowercase
+  let urlStr = str.toLowerCase();
+  
+  // Replace spaces with dashes
+  urlStr = urlStr.replace(/ /g, '-');
+  
+  // Remove any non-alphanumeric characters
+  urlStr = urlStr.replace(/[^a-z0-9-]/g, '');
+  
+  return urlStr;
 }
 
 const findAvail = (meetingPatterns) => {
@@ -68,6 +84,7 @@ function App() {
   const [gray, setGray] = useState([])
   const [searchText, setSearchText] = useState([]);
   const [selectedSubject, setSubject] = useState([]);
+  const [selectedGened, setGened] = useState([]);
   const dispatch = useDispatch()
 
   const handleSearchTextChange = (event) => {
@@ -115,7 +132,6 @@ function App() {
     async function fetchData () {
       const query = searchText;
       const subject = subjectDescriptions[selectedSubject];
-      console.log(subject);
       
       const response = await fetch(`http://localhost:5001/search?query=${query}`);
       // console.log(response);
@@ -126,7 +142,7 @@ function App() {
       }
   
       const record = await response.json();
-      console.log({record});
+      // console.log({record});
       if (!record) {
         window.alert(`Class from query ${id} not found`);
         navigate("/");
@@ -138,7 +154,6 @@ function App() {
 
     async function fetchSubjectData () {
       const subject = subjectDescriptions[selectedSubject];
-      console.log(subject);
       
       // Handle subject change
       if (subject != 'all') {
@@ -149,7 +164,7 @@ function App() {
           return;
         }
         const record = await response.json();
-        console.log({record});
+        // console.log({record});
         if (!record) {
           window.alert(`Class from query ${id} not found`);
           navigate("/");
@@ -160,14 +175,44 @@ function App() {
 
     }
 
-    async function fetchDataSubjectGenedSearch () {
-      const subject = subjectDescriptions[selectedSubject];
-      const query = searchText;
-      console.log(subject);
+    async function fetchGenedData () {
+      const gened = formatAsUrl(selectedGened);
       
-      // Handle subject change
-      if (subject != 'all') {
-        const response = await fetch(`http://localhost:5001/search?query=${query}&subject=${subject}`);
+    // Handle subject change
+      const response = await fetch(`http://localhost:5001/gened?type=${gened}`);
+      if (!response.ok) {
+        const message = `An error has occurred: ${response.statusText}`;
+        window.alert(message);
+        return;
+      }
+      const record = await response.json();
+      console.log({record});
+      if (!record) {
+        window.alert(`Class from query ${id} not found`);
+        navigate("/");
+        return;
+      }
+      setDisplayCourses(record)
+
+    }
+
+    async function fetchDataSubjectGenedSearch() {
+      console.log(selectedSubject)
+      let subject = "";
+      if (typeof selectedSubject === "string" && selectedSubject != "all") {
+        subject = formatAsUrl(subjectDescriptions[selectedSubject]);
+      }
+      
+      const query = searchText;
+      
+      let gened = "";
+      if (typeof selectedGened === "string") {
+        gened = formatAsUrl(selectedGened);
+      }
+      // Handle subject and gened search
+      if (subject !== "" && gened !== "") {
+        console.log("both")
+        const response = await fetch(`http://localhost:5001/search?query=${query}&subject=${subject}&GenedType=${gened}`);
         if (!response.ok) {
           const message = `An error has occurred: ${response.statusText}`;
           window.alert(message);
@@ -180,33 +225,103 @@ function App() {
           navigate("/");
           return;
         }
-        setDisplayCourses(record)
+        setDisplayCourses(record);
+      } 
+
+      else if (subject !== "") {
+        console.log("subject search")
+        const upper_sub = subject.toUpperCase();
+        console.log(`http://localhost:5001/search?query=${query}&subject=${subject}`)
+        const response = await fetch(`http://localhost:5001/search?query=${query}&subject=${upper_sub}`);
+        if (!response.ok) {
+          const message = `An error has occurred: ${response.statusText}`;
+          window.alert(message);
+          return;
+        }
+        const record = await response.json();
+        console.log({record});
+        if (!record) {
+          window.alert(`Class from query ${id} not found`);
+          navigate("/");
+          return;
+        }
+        setDisplayCourses(record);
+      }
+      // Handle gened search
+      else if (gened !== "") {
+        console.log("gened search")
+
+        const response = await fetch(`http://localhost:5001/search?query=${query}&GenedType=${gened}`);
+        if (!response.ok) {
+          const message = `An error has occurred: ${response.statusText}`;
+          window.alert(message);
+          return;
+        }
+        const record = await response.json();
+        console.log({record});
+        if (!record) {
+          window.alert(`Class from query ${id} not found`);
+          navigate("/");
+          return;
+        }
+        setDisplayCourses(record);
       }
 
+      else {
+        console.log("both")
+        const response = await fetch(`http://localhost:5001/search?query=${query}`);
+        if (!response.ok) {
+          const message = `An error has occurred: ${response.statusText}`;
+          window.alert(message);
+          return;
+        }
+        const record = await response.json();
+        console.log({record});
+        if (!record) {
+          window.alert(`Class from query ${id} not found`);
+          navigate("/");
+          return;
+        }
+        setDisplayCourses(record);
+      } 
+
+    }
+    
+    
+    
+
+    if (searchText != "") {
+      console.log('searchtext')
+      fetchDataSubjectGenedSearch();
     }
 
-    if (searchText != "" && selectedSubject == "all") {
-      fetchData();
-    }
+    if ((selectedSubject != "all" && selectedSubject != "") && searchText == "") {
+      console.log('subject')
 
-    if (selectedSubject != "all" && searchText == "") {
       fetchSubjectData();
     }
 
-    if (selectedSubject != "all" && searchText != "") {
-      // console.log('inside fetch')
-      fetchDataSubjectGenedSearch();
+    if (selectedGened != "" && searchText == "") {
+      console.log('gened')
+
+      fetchGenedData();
     }
+
   
     return;
-  }, [searchText, selectedSubject]);
+  }, [searchText, selectedSubject, selectedGened]);
 
   const handleChangeLabel = (event) => {
     dispatch(setActiveLabel(event.target.value))
   };
 
   const handleChangeSubject = (event) => {
+    console.log('change subject')
     setSubject(event.target.value);
+  }
+
+  function handleGenedFilter (genedType) {
+    setGened(genedType);
   }
   
   return (
@@ -227,10 +342,10 @@ function App() {
         <div>
           <Grid container justifyContent={"center"}>
           <ButtonGroup variant = "outlined" aria-label="contained button group">
-              <Button onClick = {() => handleGenedFilter(0)} >Aesthetics and Culture </Button>
-              <Button onClick = {() => handleGenedFilter(1)}>Ethics and Civics</Button>
-              <Button onClick = {() => handleGenedFilter(2)}> Histories, Societies, and Individuals </Button>
-              <Button onClick = {() => handleGenedFilter(3)}>Science and Technology in Society</Button>
+              <Button onClick = {() => handleGenedFilter("Aesthetics and Culture")} >Aesthetics and Culture</Button>
+              <Button onClick = {() => handleGenedFilter("Ethics and Civics")}>Ethics and Civics</Button>
+              <Button onClick = {() => handleGenedFilter("Histories, Societies, and Individuals")}>Histories, Societies, and Individuals</Button>
+              <Button onClick = {() => handleGenedFilter("Science and Technology in Society")}>Science and Technology in Society</Button>
             </ButtonGroup>
             <Grid item xs= {8}>
               <TextField 
